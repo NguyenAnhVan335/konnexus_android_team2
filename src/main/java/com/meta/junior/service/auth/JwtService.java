@@ -20,7 +20,7 @@ public class JwtService {
     public String generateJwt(UUID id,String role){
 
         long duration = System.currentTimeMillis() + 3600;
-        return Jwt.issuer("chatify-jwt")
+        return Jwt.issuer("konnexus-jwt")
                 .subject(id.toString())
                 .groups(role)
                 .expiresAt(duration)
