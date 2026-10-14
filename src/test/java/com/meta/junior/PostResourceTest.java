@@ -150,12 +150,13 @@ class PostResourceTest {
                 .body("data.content[1].content", equalTo("First Post"));
     }
 
-    // 5. Get post by id
+    // 5. Get post by id (the author can read their own FRIENDS post)
     @Test
     void getPostByIdReturnsPost() {
         String id = createPost(AUTHOR_A, "Fetch me", "FRIENDS");
 
         given()
+                .header("X-User-Id", AUTHOR_A.toString())
                 .when().get("/api/v1/posts/" + id)
                 .then()
                 .statusCode(200)
@@ -163,7 +164,9 @@ class PostResourceTest {
                 .body("data.id", equalTo(id))
                 .body("data.content", equalTo("Fetch me"))
                 .body("data.privacy", equalTo("FRIENDS"))
-                .body("data.author.id", equalTo(AUTHOR_A.toString()));
+                .body("data.author.id", equalTo(AUTHOR_A.toString()))
+                .body("data.reactions.total", equalTo(0))
+                .body("data.comments.size()", equalTo(0));
     }
 
     // 6. Get post by unknown id -> 404
@@ -238,7 +241,9 @@ class PostResourceTest {
 
         given()
                 .header("X-User-Id", AUTHOR_A.toString())
-                .when().delete("/api/v1/posts/" + id)
+                .contentType(ContentType.JSON)
+                .body(Map.of("status", "DELETED"))
+                .when().put("/api/v1/posts/" + id)
                 .then()
                 .statusCode(200)
                 .body("success", equalTo(true))
@@ -263,7 +268,9 @@ class PostResourceTest {
 
         given()
                 .header("X-User-Id", AUTHOR_B.toString())
-                .when().delete("/api/v1/posts/" + id)
+                .contentType(ContentType.JSON)
+                .body(Map.of("status", "DELETED"))
+                .when().put("/api/v1/posts/" + id)
                 .then()
                 .statusCode(403);
     }

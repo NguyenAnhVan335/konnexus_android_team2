@@ -23,6 +23,11 @@ import java.util.UUID;
  * }
  * </pre>
  * Kept as a DTO so the entity is never serialized directly.
+ *
+ * <p>{@code like_count} and {@code comment_count} are the <em>real</em> interaction totals read from
+ * the {@code emojis} / {@code post_comments} tables (the denormalised {@code post.like_count} /
+ * {@code post.comment_count} columns are not maintained by any feature yet), and {@code _liked} tells
+ * whether the current viewer reacted to the post.</p>
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record PostResponse(
@@ -38,9 +43,12 @@ public record PostResponse(
         boolean edited,
         @JsonProperty("_liked") boolean liked
 ) {
-    public static PostResponse from(Post post) {
-        // TODO (User module): resolve the real username/avatar_url once a User entity exists.
-        AuthorResponse author = new AuthorResponse(post.getAuthorId(), null, null);
+    public static PostResponse from(
+            Post post,
+            AuthorResponse author,
+            int likeCount,
+            int commentCount,
+            boolean liked) {
         List<MediaResponse> media = post.getMediaList().stream()
                 .map(MediaResponse::from)
                 .toList();
@@ -49,14 +57,13 @@ public record PostResponse(
                 author,
                 post.getContent(),
                 post.getPrivacy(),
-                post.getLikeCount(),
-                post.getCommentCount(),
+                likeCount,
+                commentCount,
                 media,
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.isEdited(),
-                // TODO (_liked): resolve per-current-user like state once the like feature exists.
-                false
+                liked
         );
     }
 }

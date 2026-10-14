@@ -27,9 +27,25 @@ public class CurrentUserProvider {
     HttpHeaders httpHeaders;
 
     public UUID getCurrentUserId() {
+        UUID userId = getCurrentUserIdOrNull();
+        if (userId == null) {
+            throw new NotAuthorizedException("Authentication required: X-User-Id header is missing");
+        }
+        return userId;
+    }
+
+    /**
+     * Resolves the current user id, or {@code null} when the request is anonymous (no
+     * {@code X-User-Id} header).
+     *
+     * <p>Used by the read endpoints of the Post API: an anonymous visitor is allowed to browse, but
+     * only sees {@code PUBLIC} posts. A malformed header is still rejected with 400 so a client bug
+     * never silently downgrades a logged-in user to a guest.</p>
+     */
+    public UUID getCurrentUserIdOrNull() {
         String header = httpHeaders.getHeaderString("X-User-Id");
         if (header == null || header.isBlank()) {
-            throw new NotAuthorizedException("Authentication required: X-User-Id header is missing");
+            return null;
         }
         try {
             return UUID.fromString(header.trim());
