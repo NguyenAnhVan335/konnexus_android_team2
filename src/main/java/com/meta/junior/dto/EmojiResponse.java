@@ -1,3 +1,4 @@
+
 package com.meta.junior.dto;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,10 @@ public class EmojiResponse {
     public UUID postId;
     public UUID cmtId;
     public UUID authorId;
+
+    public String authorName;
+    public String authorAvatar;
+
     public LocalDateTime createdAt;
     public boolean active;
 }
