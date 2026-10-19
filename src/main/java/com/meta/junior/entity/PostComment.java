@@ -1,54 +1,58 @@
-
 package com.meta.junior.entity;
+
+import com.meta.junior.entity.Post;
+import com.meta.junior.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "post_comments")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PostComment {
 
     @Id
-    public UUID id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(name = "post_id", nullable = false)
-    public UUID postId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    public String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
 
-    @Column(name = "image", columnDefinition = "TEXT")
-    public String image;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 
-    // ID bình luận cha, null nếu là bình luận gốc
-    @Column(name = "cmt_id")
-    public UUID cmtId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private PostComment parentComment;
 
-    @Column(name = "created_at", nullable = false)
-    public LocalDateTime createdAt;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
 
-    @Column(nullable = false)
-    public boolean status = true;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
-    public void beforeInsert() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.isDeleted = false;
     }
 
     @PreUpdate
-    public void beforeUpdate() {
-        // Không thay đổi createdAt khi cập nhật bình luận
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
