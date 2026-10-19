@@ -1,4 +1,4 @@
-package alan.nguyen.dto.chatify.user;
+package com.meta.junior.dto.chat.user;
 
 import lombok.Data;
 

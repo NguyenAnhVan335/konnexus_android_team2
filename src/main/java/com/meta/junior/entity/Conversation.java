@@ -1,7 +1,6 @@
-package alan.nguyen.entity;
+package com.meta.junior.entity;
 
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
-package alan.nguyen.dto.chatify.user;
+package com.meta.junior.dto.chat.user;
 
-import alan.nguyen.common.GroupRole;
+import com.meta.junior.common.GroupRole;
 
 public class PromotingRoleDTO {
     public GroupRole role;

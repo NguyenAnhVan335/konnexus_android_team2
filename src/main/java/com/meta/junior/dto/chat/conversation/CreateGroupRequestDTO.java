@@ -1,4 +1,4 @@
-package alan.nguyen.dto.chatify.conversation;
+package com.meta.junior.dto.chat.conversation;
 
 import java.util.List;
 import java.util.UUID;

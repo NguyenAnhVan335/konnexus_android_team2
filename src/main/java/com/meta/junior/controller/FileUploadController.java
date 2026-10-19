@@ -1,6 +1,6 @@
-package alan.nguyen.controller;
+package com.meta.junior.controller;
 
-import alan.nguyen.service.CloudinaryService;
+import com.meta.junior.service.CloudinaryService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -12,8 +12,6 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
-import javax.print.attribute.standard.Media;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 

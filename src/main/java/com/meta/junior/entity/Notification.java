@@ -1,6 +1,7 @@
-package alan.nguyen.entity;
+package com.meta.junior.entity;
 
-import alan.nguyen.common.NortificationType;
+
+import com.meta.junior.common.NortificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

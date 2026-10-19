@@ -1,12 +1,10 @@
-package alan.nguyen.entity;
+package com.meta.junior.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "message_reads")
-public class MessageRead{
+public class MessageRead {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

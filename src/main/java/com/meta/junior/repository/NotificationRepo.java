@@ -1,6 +1,7 @@
-package alan.nguyen.repository;
+package com.meta.junior.repository;
 
-import alan.nguyen.entity.Notification;
+
+import com.meta.junior.entity.Notification;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Page;

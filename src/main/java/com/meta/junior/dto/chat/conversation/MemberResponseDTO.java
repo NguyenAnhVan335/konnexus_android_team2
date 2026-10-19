@@ -1,6 +1,5 @@
-package alan.nguyen.dto.chatify.conversation;
-
-import alan.nguyen.common.GroupRole;
+package com.meta.junior.dto.chat.conversation;
+import com.meta.junior.common.GroupRole;
 
 import java.util.UUID;
 

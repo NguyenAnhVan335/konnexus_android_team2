@@ -1,8 +1,8 @@
-package alan.nguyen.controller;
+package com.meta.junior.controller;
 
-import alan.nguyen.dto.chatify.message.MessageRequestDTO;
-import alan.nguyen.entity.Message;
-import alan.nguyen.service.MessageService;
+import com.meta.junior.dto.chat.message.MessageRequestDTO;
+import com.meta.junior.entity.Message;
+import com.meta.junior.service.MessageService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

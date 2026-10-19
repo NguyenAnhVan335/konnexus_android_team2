@@ -1,8 +1,7 @@
-package alan.nguyen.service;
-
-import alan.nguyen.common.GroupRole;
-import alan.nguyen.dto.chatify.conversation.MemberResponseDTO;
-import alan.nguyen.repository.ParticipantRepo;
+package com.meta.junior.service;
+import com.meta.junior.common.GroupRole;
+import com.meta.junior.dto.chat.conversation.MemberResponseDTO;
+import com.meta.junior.repository.ParticipantRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

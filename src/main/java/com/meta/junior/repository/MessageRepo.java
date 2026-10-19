@@ -1,6 +1,6 @@
-package alan.nguyen.repository;
+package com.meta.junior.repository;
 
-import alan.nguyen.entity.Message;
+import com.meta.junior.entity.Message;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 

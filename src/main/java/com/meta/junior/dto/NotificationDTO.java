@@ -1,6 +1,5 @@
-package alan.nguyen.dto.connexa.nortification;
-
-import alan.nguyen.common.NortificationType;
+package com.meta.junior.dto;
+import com.meta.junior.common.NortificationType;
 import lombok.*;
 
 import java.util.UUID;

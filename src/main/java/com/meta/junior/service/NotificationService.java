@@ -1,13 +1,12 @@
-package alan.nguyen.service;
-
-import alan.nguyen.dto.PageResponseDTO;
-import alan.nguyen.dto.connexa.nortification.DeleteNotificationDTO;
-import alan.nguyen.dto.connexa.nortification.NotificationDTO;
-import alan.nguyen.dto.connexa.nortification.UpdateNotificationDTO;
-import alan.nguyen.entity.Notification;
-import alan.nguyen.entity.User;
-import alan.nguyen.repository.NotificationRepo;
-import alan.nguyen.repository.UserRepo;
+package com.meta.junior.service;
+import com.meta.junior.dto.DeleteNotificationDTO;
+import com.meta.junior.dto.NotificationDTO;
+import com.meta.junior.dto.PageResponseDTO;
+import com.meta.junior.dto.UpdateNotificationDTO;
+import com.meta.junior.entity.Notification;
+import com.meta.junior.entity.User;
+import com.meta.junior.repository.NotificationRepo;
+import com.meta.junior.repository.UserRepo;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,7 +66,7 @@ public class NotificationService {
 
     @Transactional
     public Notification updateNortification(UUID currentUserId, UpdateNotificationDTO dto) {
-        Notification notification = notiRepo.findByIdOptional(dto.nortificationId)
+        Notification notification = notiRepo.findByIdOptional(dto.notificationId)
                 .orElseThrow(() -> new NotFoundException("Nortification not found."));
         if(!currentUserId.equals(notification.getReceiver_id())){
             throw new ForbiddenException("You are not allowed to perform this action.");

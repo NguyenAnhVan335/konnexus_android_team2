@@ -1,4 +1,4 @@
-package alan.nguyen.controller;
+package com.meta.junior.controller;
 
 public class ParticipantController {
 }

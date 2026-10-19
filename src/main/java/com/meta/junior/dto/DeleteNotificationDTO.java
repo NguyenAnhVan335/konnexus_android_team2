@@ -1,4 +1,4 @@
-package alan.nguyen.dto.connexa.nortification;
+package com.meta.junior.dto;
 
 import lombok.Data;
 

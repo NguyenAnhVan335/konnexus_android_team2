@@ -1,12 +1,12 @@
-package alan.nguyen.controller;
+package com.meta.junior.controller;
 
-import alan.nguyen.common.ApiResponse;
-import alan.nguyen.dto.PageResponseDTO;
-import alan.nguyen.dto.connexa.nortification.DeleteNotificationDTO;
-import alan.nguyen.dto.connexa.nortification.NotificationDTO;
-import alan.nguyen.dto.connexa.nortification.UpdateNotificationDTO;
-import alan.nguyen.entity.Notification;
-import alan.nguyen.service.NotificationService;
+import com.meta.junior.common.ApiResponse;
+import com.meta.junior.dto.DeleteNotificationDTO;
+import com.meta.junior.dto.NotificationDTO;
+import com.meta.junior.dto.PageResponseDTO;
+import com.meta.junior.dto.UpdateNotificationDTO;
+import com.meta.junior.entity.Notification;
+import com.meta.junior.service.NotificationService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

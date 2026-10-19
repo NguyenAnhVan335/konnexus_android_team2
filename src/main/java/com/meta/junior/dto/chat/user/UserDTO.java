@@ -1,9 +1,7 @@
-package alan.nguyen.dto.chatify.user;
+package com.meta.junior.dto.chat.user;
 
-import alan.nguyen.common.SystemRole;
+import com.meta.junior.common.SystemRole;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 public class UserDTO {

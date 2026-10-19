@@ -1,4 +1,4 @@
-package alan.nguyen.entity;
+package com.meta.junior.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

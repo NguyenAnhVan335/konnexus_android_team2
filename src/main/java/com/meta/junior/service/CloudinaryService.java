@@ -1,4 +1,4 @@
-package alan.nguyen.service;
+package com.meta.junior.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

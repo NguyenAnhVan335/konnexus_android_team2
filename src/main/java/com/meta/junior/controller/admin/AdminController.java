@@ -1,12 +1,11 @@
-package alan.nguyen.controller.admin;
+package com.meta.junior.controller.admin;
 
-import alan.nguyen.service.ConversationService;
-import alan.nguyen.service.UserService;
-import alan.nguyen.service.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.quarkus.security.Authenticated;
+import com.meta.junior.service.ConversationService;
+import com.meta.junior.service.MessageService;
+import com.meta.junior.service.UserService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

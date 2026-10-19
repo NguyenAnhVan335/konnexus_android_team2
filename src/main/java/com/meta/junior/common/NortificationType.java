@@ -1,4 +1,4 @@
-package alan.nguyen.common;
+package com.meta.junior.common;
 
 public enum NortificationType {
     LIKE_POST,

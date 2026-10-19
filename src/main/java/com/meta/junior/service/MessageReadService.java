@@ -1,16 +1,13 @@
-package alan.nguyen.service;
-
-import alan.nguyen.entity.MessageRead;
-import alan.nguyen.entity.User;
-import alan.nguyen.repository.MessageReadRepo;
-import alan.nguyen.repository.UserRepo;
+package com.meta.junior.service;
+import com.meta.junior.entity.MessageRead;
+import com.meta.junior.entity.User;
+import com.meta.junior.repository.MessageReadRepo;
+import com.meta.junior.repository.UserRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.core.Response;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped

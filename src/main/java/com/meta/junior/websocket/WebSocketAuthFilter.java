@@ -1,4 +1,4 @@
-package alan.nguyen.websocket;
+package com.meta.junior.websocket;
 
 import io.quarkus.vertx.web.RouteFilter;
 import io.vertx.ext.web.RoutingContext;

@@ -1,4 +1,4 @@
-package alan.nguyen.dto.chatify.message;
+package com.meta.junior.dto.chat.message;
 
 
 public class MessageResponseDTO {

@@ -1,14 +1,15 @@
-package alan.nguyen.service;
+package com.meta.junior.service;
 
-import alan.nguyen.common.GroupRole;
-import alan.nguyen.dto.chatify.conversation.UpdateConvDTO;
-import alan.nguyen.entity.Conversation;
-import alan.nguyen.entity.Participant;
-import alan.nguyen.entity.User;
-import alan.nguyen.repository.ConversationRepo;
-import alan.nguyen.repository.MessageRepo;
-import alan.nguyen.repository.ParticipantRepo;
-import alan.nguyen.repository.UserRepo;
+
+import com.meta.junior.common.GroupRole;
+import com.meta.junior.dto.chat.conversation.UpdateConvDTO;
+import com.meta.junior.entity.Conversation;
+import com.meta.junior.entity.Participant;
+import com.meta.junior.entity.User;
+import com.meta.junior.repository.ConversationRepo;
+import com.meta.junior.repository.MessageRepo;
+import com.meta.junior.repository.ParticipantRepo;
+import com.meta.junior.repository.UserRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -21,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped
-public class ConversationService{
+public class ConversationService {
 
     @Inject
     ConversationRepo conversationRepo;
@@ -46,7 +47,7 @@ public class ConversationService{
 
         //Create participant list
         List<Participant> participants = new ArrayList<>();
-        participants.add(new Participant(GroupRole.ADMIN.ADMIN, creator_id, conversation.getId()));
+        participants.add(new Participant(GroupRole.ADMIN, creator_id, conversation.getId()));
         for (UUID memberId : member_id){
             User existing_user = userRepo.findById(memberId);
             if(existing_user==null)

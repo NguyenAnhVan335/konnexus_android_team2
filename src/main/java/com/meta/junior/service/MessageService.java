@@ -1,9 +1,10 @@
-package alan.nguyen.service;
+package com.meta.junior.service;
 
-import alan.nguyen.dto.chatify.message.MessageResponseDTO;
-import alan.nguyen.entity.Message;
-import alan.nguyen.repository.MessageRepo;
-import alan.nguyen.repository.ParticipantRepo;
+
+import com.meta.junior.dto.chat.message.MessageResponseDTO;
+import com.meta.junior.entity.Message;
+import com.meta.junior.repository.MessageRepo;
+import com.meta.junior.repository.ParticipantRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 
 @ApplicationScoped
-public class MessageService{
+public class MessageService {
 
     @Inject
     ParticipantRepo paticipantRepo;

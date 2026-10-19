@@ -1,4 +1,4 @@
-package alan.nguyen.dto;
+package com.meta.junior.dto;
 
 import java.util.List;
 

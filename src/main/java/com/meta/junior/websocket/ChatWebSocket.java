@@ -1,16 +1,15 @@
-    package alan.nguyen.websocket;
-
-    import alan.nguyen.controller.admin.AdminController;
-    import alan.nguyen.dto.chatify.message.MessageRequestDTO;
-    import alan.nguyen.dto.chatify.message.MessageResponseDTO;
-    import alan.nguyen.entity.Message;
-    import alan.nguyen.service.MessageReadService;
-    import alan.nguyen.service.MessageService;
-    import alan.nguyen.service.UserService;
-    import alan.nguyen.service.chatbot.ChatbotService;
+    package com.meta.junior.websocket;
     import com.fasterxml.jackson.core.JsonProcessingException;
     import com.fasterxml.jackson.databind.ObjectMapper;
     import com.fasterxml.jackson.databind.node.ObjectNode;
+    import com.meta.junior.controller.admin.AdminController;
+    import com.meta.junior.dto.chat.message.MessageResponseDTO;
+    import com.meta.junior.entity.Message;
+    import com.meta.junior.dto.chat.message.MessageRequestDTO;
+    import com.meta.junior.service.MessageReadService;
+    import com.meta.junior.service.MessageService;
+    import com.meta.junior.service.UserService;
+    import com.meta.junior.service.chatbot.ChatbotService;
     import io.quarkus.security.Authenticated;
     import io.quarkus.websockets.next.*;
     import jakarta.inject.Inject;

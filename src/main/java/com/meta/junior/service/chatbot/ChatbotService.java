@@ -1,4 +1,4 @@
-package alan.nguyen.service.chatbot;
+package com.meta.junior.service.chatbot;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;

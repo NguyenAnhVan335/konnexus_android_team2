@@ -1,4 +1,4 @@
-package alan.nguyen.dto.chatify.user;
+package com.meta.junior.dto.chat.user;
 
 public class ProfileResponseDTO {
     public String username;

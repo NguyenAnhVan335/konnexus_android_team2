@@ -1,8 +1,9 @@
-package alan.nguyen.repository;
+package com.meta.junior.repository;
 
-import alan.nguyen.common.GroupRole;
-import alan.nguyen.dto.chatify.conversation.MemberResponseDTO;
-import alan.nguyen.entity.Participant;
+
+import com.meta.junior.common.GroupRole;
+import com.meta.junior.dto.chat.conversation.MemberResponseDTO;
+import com.meta.junior.entity.Participant;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
