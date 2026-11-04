@@ -8,4 +8,7 @@ public class EmojiRequest {
     public UUID postId;
     public UUID cmtId;
     public UUID authorId;
+
+    public String authorName;
+    public String authorAvatar;
 }

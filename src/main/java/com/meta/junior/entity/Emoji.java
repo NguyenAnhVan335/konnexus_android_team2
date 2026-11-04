@@ -31,12 +31,20 @@ public class Emoji {
 
     @Column(name = "created_at", nullable = false)
     public LocalDateTime createdAt;
+    
+    @Column(name = "author_name")
+    public String authorName;
+
+    @Column(name = "author_avatar")
+    public String authorAvatar;
+
 
     @PrePersist
     public void beforeInsert() {
         if (id == null) {
             id = UUID.randomUUID();
         }
+
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
