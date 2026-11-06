@@ -150,4 +150,51 @@ public class PostInteractionServiceImpl implements PostInteractionService {
 
         return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
     }
+
+    @Override
+    @Transactional
+    public void toggleCommentReaction(UUID currentUserId, UUID commentId, ReactionRequestDTO dto) {
+        PostComment comment = commentRepo.findActiveById(commentId)
+                .orElseThrow(() -> new NotFoundException("Bình luận không tồn tại hoặc đã bị xóa"));
+
+        User user = userRepo.findByIdOptional(currentUserId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+
+        Optional<PostReaction> existing = reactionRepo.findByCommentAndUser(commentId, currentUserId);
+
+        if (existing.isPresent()) {
+            PostReaction reaction = existing.get();
+            if (reaction.getType() == dto.getType()) {
+                reactionRepo.delete(reaction);
+            } else {
+                reaction.setType(dto.getType());
+            }
+        } else {
+            PostReaction reaction = PostReaction.builder()
+                    .post(comment.getPost())
+                    .comment(comment)
+                    .author(user)
+                    .type(dto.getType())
+                    .build();
+            reactionRepo.persist(reaction);
+        }
+    }
+
+    @Override
+    public PageResponseDTO<ReactionUserResponseDTO> getCommentReactions(UUID commentId, int page, int size) {
+        commentRepo.findActiveById(commentId)
+                .orElseThrow(() -> new NotFoundException("Bình luận không tồn tại hoặc đã bị xóa"));
+
+        int pageIndex = Math.max(0, page);
+        int pageSize = Math.min(Math.max(1, size), 50);
+
+        Page pageable = Page.of(pageIndex, pageSize);
+        PanacheQuery<PostReaction> query = reactionRepo.findByCommentId(commentId, pageable);
+
+        List<ReactionUserResponseDTO> items = query.list().stream()
+                .map(ReactionUserResponseDTO::fromEntity)
+                .toList();
+
+        return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
+    }
 }

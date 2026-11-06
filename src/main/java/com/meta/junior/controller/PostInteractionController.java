@@ -98,4 +98,27 @@ public class PostInteractionController {
         PageResponseDTO<ReactionUserResponseDTO> response = interactionService.getPostReactions(postId, page, size);
         return Response.ok(ApiResponse.success(response)).build();
     }
+
+    /** Thả, đổi hoặc hủy biểu cảm bình luận */
+    @POST
+    @Path("/comments/{commentId}/reactions")
+    public Response toggleCommentReaction(
+            @PathParam("commentId") UUID commentId,
+            @Valid @NotNull ReactionRequestDTO dto) {
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        interactionService.toggleCommentReaction(currentUserId, commentId, dto);
+        return Response.ok(ApiResponse.success("Thực hiện tương tác thành công", null)).build();
+    }
+
+    /** Lấy danh sách Reaction của bình luận có phân trang */
+    @GET
+    @Path("/comments/{commentId}/reactions")
+    public Response getCommentReactions(
+            @PathParam("commentId") UUID commentId,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+
+        PageResponseDTO<ReactionUserResponseDTO> response = interactionService.getCommentReactions(commentId, page, size);
+        return Response.ok(ApiResponse.success(response)).build();
+    }
 }

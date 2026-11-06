@@ -41,5 +41,11 @@ public class User {
     private String note;
     @Column(name = "birthday")
     private LocalDate birthday;
+    @Column(name = "address")
+    private String address;
+    @Column(name = "gender")
+    private String gender;
+    @Column(name = "is_active")
+    private boolean is_active = true;
 
 }

@@ -20,4 +20,13 @@ public class PostReactionRepo implements PanacheRepositoryBase<PostReaction, UUI
     public PanacheQuery<PostReaction> findByPostId(UUID postId, Page pageable) {
         return find("post.id = ?1 order by createdAt desc", postId).page(pageable);
     }
+
+    public Optional<PostReaction> findByCommentAndUser(UUID commentId, UUID userId) {
+        return find("comment.id = ?1 and author.id = ?2", commentId, userId).firstResultOptional();
+    }
+
+    /**Lấy danh sách các reaction của bình luận (phân trang)*/
+    public PanacheQuery<PostReaction> findByCommentId(UUID commentId, Page pageable) {
+        return find("comment.id = ?1 order by createdAt desc", commentId).page(pageable);
+    }
 }

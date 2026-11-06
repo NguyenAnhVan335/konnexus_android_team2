@@ -24,4 +24,10 @@ public interface PostInteractionService {
 
     /** Xóa mềm bình luận (Tác giả bình luận hoặc tác giả bài viết có quyền xóa) */
     void deleteComment(UUID currentUserId, UUID commentId);
+
+    /** Thả, thay đổi hoặc gỡ cảm xúc bình luận */
+    void toggleCommentReaction(UUID currentUserId, UUID commentId, ReactionRequestDTO dto);
+
+    /** Lấy danh sách reaction của bình luận có phân trang */
+    PageResponseDTO<ReactionUserResponseDTO> getCommentReactions(UUID commentId, int page, int size);
 }
