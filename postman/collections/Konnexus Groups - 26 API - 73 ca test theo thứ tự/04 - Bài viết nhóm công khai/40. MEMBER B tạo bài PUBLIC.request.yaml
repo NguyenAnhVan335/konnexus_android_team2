@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups/{{publicGroupId}}/posts"
+method: POST
+headers:
+  X-Test-User-Id: "{{memberB}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "content": "Bài viết thử nghiệm PUBLIC {{runId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Bài được xuất bản", function () { pm.expect(json.data.status).to.eql("PUBLISHED"); });
+      pm.test("Tác giả B", function () { pm.expect(json.data.authorId).to.eql(pm.collectionVariables.get("memberB")); });
+      if (pm.response.code === 201 && json.data) { pm.collectionVariables.set("publicPostId", json.data.id); }
+    language: text/javascript
+order: 1000

@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups/{{publicGroupId}}/members"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Có ít nhất ba thành viên", function () { pm.expect(json.data.length).to.be.at.least(3); });
+      pm.test("Có OWNER", function () { pm.expect(json.data.some(x => x.role === "OWNER")).to.be.true; });
+    language: text/javascript
+order: 5000

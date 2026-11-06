@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups/{{privateGroupId}}/members"
+method: GET
+headers:
+  X-Test-User-Id: "{{outsiderD}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Có thành viên D", function () { pm.expect(json.data.map(x=>x.userId)).to.include(pm.collectionVariables.get("outsiderD")); });
+    language: text/javascript
+order: 14000

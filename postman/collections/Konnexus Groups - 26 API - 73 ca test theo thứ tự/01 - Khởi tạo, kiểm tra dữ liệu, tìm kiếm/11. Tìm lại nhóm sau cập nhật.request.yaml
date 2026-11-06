@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups?keyword=PUBLIC_Updated_{{runId}}"
+method: GET
+queryParams:
+  keyword: PUBLIC_Updated_{{runId}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Danh sách chứa ID vừa tạo", function () { pm.expect(json.data.map(x => x.id)).to.include(pm.collectionVariables.get("publicGroupId")); });
+    language: text/javascript
+order: 11000

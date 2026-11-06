@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups"
+method: POST
+headers:
+  X-Test-User-Id: "{{ownerA}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "   ",
+      "privacy": "PUBLIC"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 400", function () { pm.response.to.have.status(400); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = false", function () { pm.expect(json.success).to.eql(false); });
+    language: text/javascript
+order: 3000

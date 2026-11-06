@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups/{{publicGroupId}}/delete"
+method: PUT
+headers:
+  X-Test-User-Id: "{{ownerA}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 403", function () { pm.response.to.have.status(403); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = false", function () { pm.expect(json.success).to.eql(false); });
+    language: text/javascript
+order: 5000

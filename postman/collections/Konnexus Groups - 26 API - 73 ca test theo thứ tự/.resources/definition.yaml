@@ -1,0 +1,16 @@
+$kind: collection
+description: Bám sát 26 endpoint trong Konnexus_Group_Backend.zip (02/11/2026). 73 request, test HTTP/response/data và tự lưu các UUID. Dùng X-Test-User-Id trong chế độ dev/test. Dùng Collection Runner theo thứ tự; 2 API xóa nhóm và xóa bài là PUT /delete. Không gửi Authorization Bearer.
+variables:
+  baseUrl: http://localhost:8080
+  ownerA: 11111111-1111-1111-1111-111111111111
+  memberB: 22222222-2222-2222-2222-222222222222
+  memberC: 33333333-3333-3333-3333-333333333333
+  outsiderD: 44444444-4444-4444-4444-444444444444
+  runId: ""
+  publicGroupId: ""
+  privateGroupId: ""
+  requestCId: ""
+  requestDId: ""
+  publicPostId: ""
+  privatePostId: ""
+  privatePost2Id: ""

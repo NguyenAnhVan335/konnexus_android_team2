@@ -1,0 +1,14 @@
+$kind: http-request
+name: "47. Xóa lại bài đã xóa: 404"
+url: "{{baseUrl}}/api/groups/{{publicGroupId}}/posts/{{publicPostId}}/delete"
+method: PUT
+headers:
+  X-Test-User-Id: "{{memberB}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 404", function () { pm.response.to.have.status(404); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = false", function () { pm.expect(json.success).to.eql(false); });
+    language: text/javascript
+order: 8000

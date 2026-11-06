@@ -1,0 +1,15 @@
+$kind: http-request
+name: "33. C bị từ chối: NONE"
+url: "{{baseUrl}}/api/groups/{{privateGroupId}}/membership"
+method: GET
+headers:
+  X-Test-User-Id: "{{memberC}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Trạng thái NONE", function () { pm.expect(json.data.status).to.eql("NONE"); });
+    language: text/javascript
+order: 9000

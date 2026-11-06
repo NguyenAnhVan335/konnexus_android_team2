@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups"
+method: POST
+headers:
+  X-Test-User-Id: "{{ownerA}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Konnexus_PRIVATE_{{runId}}",
+      "description": "Nhóm riêng tư",
+      "privacy": "PRIVATE",
+      "requirePostApproval": true
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Nhóm riêng tư", function () { pm.expect(json.data.privacy).to.eql("PRIVATE"); });
+      pm.test("Cần duyệt bài", function () { pm.expect(json.data.requirePostApproval).to.eql(true); });
+      if (pm.response.code === 201 && json.data) { pm.collectionVariables.set("privateGroupId", json.data.id); }
+    language: text/javascript
+order: 2000

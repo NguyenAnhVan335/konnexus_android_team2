@@ -1,0 +1,21 @@
+$kind: http-request
+description: Phải để request KHÔNG có X-Test-User-Id, không để JWT/Auth thừa trong collection hoặc môi trường.
+url: "{{baseUrl}}/api/groups"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Không có header",
+      "privacy": "PUBLIC"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 401", function () { pm.response.to.have.status(401); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = false", function () { pm.expect(json.success).to.eql(false); });
+    language: text/javascript
+order: 4000

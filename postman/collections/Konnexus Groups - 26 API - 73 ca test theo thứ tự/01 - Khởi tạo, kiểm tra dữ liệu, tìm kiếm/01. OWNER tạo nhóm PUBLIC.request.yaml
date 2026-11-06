@@ -1,0 +1,33 @@
+$kind: http-request
+description: Đây là request bắt đầu mỗi lượt chạy. Tự tạo runId để không đụng dữ liệu cũ.
+url: "{{baseUrl}}/api/groups"
+method: POST
+headers:
+  X-Test-User-Id: "{{ownerA}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Konnexus_PUBLIC_{{runId}}",
+      "description": "Nhóm kiểm thử công khai",
+      "privacy": "PUBLIC",
+      "coverUrl": "https://example.com/cover.png",
+      "requirePostApproval": false
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set("runId", Date.now().toString());
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("OWNER đúng", function () { pm.expect(json.data.ownerId).to.eql(pm.collectionVariables.get("ownerA")); });
+      pm.test("Vai trò người tạo", function () { pm.expect(json.data.myRole).to.eql("OWNER"); });
+      pm.test("Chỉ có một thành viên ban đầu", function () { pm.expect(json.data.memberCount).to.eql(1); });
+      pm.test("Nhóm công khai", function () { pm.expect(json.data.privacy).to.eql("PUBLIC"); });
+      if (pm.response.code === 201 && json.data) { pm.collectionVariables.set("publicGroupId", json.data.id); }
+    language: text/javascript
+order: 1000

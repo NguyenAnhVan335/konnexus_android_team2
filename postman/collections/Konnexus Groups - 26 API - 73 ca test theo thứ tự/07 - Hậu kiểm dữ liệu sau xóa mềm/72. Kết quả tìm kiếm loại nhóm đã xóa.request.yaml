@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups?keyword=Konnexus_"
+method: GET
+queryParams:
+  keyword: Konnexus_
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Không còn nhóm PUBLIC", function () { pm.expect(json.data.map(x=>x.id)).not.to.include(pm.collectionVariables.get("publicGroupId")); });
+      pm.test("Không còn nhóm PRIVATE", function () { pm.expect(json.data.map(x=>x.id)).not.to.include(pm.collectionVariables.get("privateGroupId")); });
+    language: text/javascript
+order: 3000

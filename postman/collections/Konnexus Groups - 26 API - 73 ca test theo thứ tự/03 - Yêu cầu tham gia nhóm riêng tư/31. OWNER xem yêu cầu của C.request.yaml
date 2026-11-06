@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/groups/{{privateGroupId}}/requests"
+method: GET
+headers:
+  X-Test-User-Id: "{{ownerA}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      let json = {}; try { json = pm.response.json(); } catch(e) {}
+      pm.test("success = true", function () { pm.expect(json.success).to.eql(true); });
+      pm.test("Có yêu cầu của C", function () { pm.expect(json.data.some(x=>x.userId === pm.collectionVariables.get("memberC"))).to.be.true; });
+      if (pm.response.code === 200 && json.data) { pm.collectionVariables.set("requestCId", json.data.find(x=>x.userId === pm.collectionVariables.get("memberC")).id); }
+    language: text/javascript
+order: 7000

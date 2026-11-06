@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: fab6f445-9d2e-4191-8972-2b9ee2af45ff
+
+cloudResources:
+  collections:
+    ../postman/collections/Konnexus Groups - 26 API - 73 ca test theo thứ tự: 863d9360-4a69-46b8-ba7c-20845f56ff56
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
