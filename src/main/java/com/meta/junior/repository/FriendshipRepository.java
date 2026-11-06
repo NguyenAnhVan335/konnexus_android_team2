@@ -1,6 +1,6 @@
-package com.meta.junior.friendship.repository;
+package com.meta.junior.repository;
 
-import com.meta.junior.friendship.entity.FriendshipEntity;
+import com.meta.junior.entity.FriendshipEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.LockModeType;

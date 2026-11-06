@@ -1,20 +1,12 @@
 package com.meta.junior.dto;
 
-/**
- * Standard success envelope used by every endpoint: {@code { "success": true, "message": ..., "data": ... }}.
- *
- * <p>Errors are returned through the exception mappers as {@link ErrorResponse} instead.</p>
- */
-public record ApiResponse<T>(
-        boolean success,
-        String message,
-        T data
-) {
-    public static <T> ApiResponse<T> ok(T data, String message) {
+public record ApiResponse<T>(boolean success, String message, T data) {
+
+    public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>(true, message, data);
     }
 
-    public static <T> ApiResponse<T> ok(String message) {
-        return new ApiResponse<>(true, message, null);
+    public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, message, null);
     }
 }

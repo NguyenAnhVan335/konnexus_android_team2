@@ -1,14 +1,15 @@
-package com.meta.junior.friendship.service;
+package com.meta.junior.service;
 
-import com.meta.junior.friendship.dto.FriendshipDto;
-import com.meta.junior.friendship.dto.FriendshipStatusDto;
-import com.meta.junior.friendship.entity.FriendshipEntity;
-import com.meta.junior.friendship.exception.ApiException;
-import com.meta.junior.friendship.repository.FriendshipRepository;
+import com.meta.junior.dto.FriendshipDto;
+import com.meta.junior.dto.FriendshipStatusDto;
+import com.meta.junior.entity.FriendshipEntity;
+import com.meta.junior.exception.ApiException;
+import com.meta.junior.repository.FriendshipRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -16,6 +17,35 @@ public class FriendshipService {
 
     @Inject
     FriendshipRepository friendshipRepository;
+    // Du lieu nguoi dung co san de test Friendship khi module User chua duoc tich hop.
+    // Chi la profile gia lap; status ket ban van luu trong database.
+    // Danh sach nay khong bi mat khi khoi dong lai Quarkus.
+    private static final String TEST_AVATAR_URL =
+            "https://api.dicebear.com/9.x/initials/svg?seed=User";
+
+    private record TestUserProfile(String name, String avatarUrl, boolean isOnline) {
+    }
+
+    private static final Map<UUID, TestUserProfile> TEST_USER_PROFILES = Map.ofEntries(
+            // UUID don gian de nhap truc tiep vao Swagger/Postman.
+            Map.entry(UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    new TestUserProfile("Nguyễn Văn A", "https://api.dicebear.com/9.x/initials/svg?seed=NguyenVanA", true)),
+            Map.entry(UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                    new TestUserProfile("Trần Thị B", "https://api.dicebear.com/9.x/initials/svg?seed=TranThiB", true)),
+            Map.entry(UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                    new TestUserProfile("Lê Văn C", "https://api.dicebear.com/9.x/initials/svg?seed=LeVanC", false)),
+            Map.entry(UUID.fromString("44444444-4444-4444-4444-444444444444"),
+                    new TestUserProfile("Phạm Thị D", "https://api.dicebear.com/9.x/initials/svg?seed=PhamThiD", true)),
+            // UUID co dinh duoc su dung trong FriendshipGetProfilesTest.
+            Map.entry(UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    new TestUserProfile("Nguyễn Văn A", "https://api.dicebear.com/9.x/initials/svg?seed=NguyenVanA", false)),
+            Map.entry(UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                    new TestUserProfile("Nguyễn Văn B", "https://api.dicebear.com/9.x/initials/svg?seed=NguyenVanB", true)),
+            Map.entry(UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                    new TestUserProfile("Nguyễn Văn C", "https://api.dicebear.com/9.x/initials/svg?seed=NguyenVanC", false)),
+            Map.entry(UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                    new TestUserProfile("Nguyễn Văn D", "https://api.dicebear.com/9.x/initials/svg?seed=NguyenVanD", true))
+    );
 
     // @Inject
     // UserAccountLookupService userAccountLookupService;
@@ -103,46 +133,75 @@ public class FriendshipService {
         friendshipRepository.flush();
     }
 
-    public List<FriendshipDto> getReceivedRequests(UUID userId) {
-        return friendshipRepository.findPendingReceived(userId)
-                .stream()
-                .map(FriendshipDto::from)
-                .toList();
+    // Lấy thông tin profile giả lập theo UUID. Mọi GET Friendship dùng chung hàm này.
+    // Khi nhóm đã có module User, chỉ cần thay thế nguồn dữ liệu tại đây.
+    private FriendshipDto.UserInfo getTestUserInfo(UUID userId) {
+        TestUserProfile profile = TEST_USER_PROFILES.get(userId);
+        String name = profile == null
+                ? "Người dùng " + userId.toString().substring(0, 8)
+                : profile.name();
+        String avatarUrl = profile == null ? TEST_AVATAR_URL : profile.avatarUrl();
+        boolean isOnline = profile != null && profile.isOnline();
+        return new FriendshipDto.UserInfo(userId, name, avatarUrl, isOnline);
     }
 
-    public List<FriendshipDto> getSentRequests(UUID userId) {
-        return friendshipRepository.findPendingSent(userId)
+    /** Lấy cả hai danh sách PENDING trong cùng một response. */
+    public FriendshipDto.RequestLists getRequests(UUID userId) {
+        List<FriendshipDto> sent = friendshipRepository.findPendingSent(userId)
                 .stream()
-                .map(FriendshipDto::from)
+                .map(friendship -> FriendshipDto.fromSent(
+                        friendship, getTestUserInfo(friendship.getReceiverId())))
                 .toList();
+
+        List<FriendshipDto> received = friendshipRepository.findPendingReceived(userId)
+                .stream()
+                .map(friendship -> FriendshipDto.fromReceived(
+                        friendship, getTestUserInfo(friendship.getSenderId())))
+                .toList();
+
+        return new FriendshipDto.RequestLists(sent, received);
     }
 
     public List<FriendshipDto> getFriends(UUID userId) {
         return friendshipRepository.findFriends(userId)
                 .stream()
-                .map(FriendshipDto::from)
+                .map(friendship -> {
+                    UUID friendId = userId.equals(friendship.getSenderId())
+                            ? friendship.getReceiverId()
+                            : friendship.getSenderId();
+                    return FriendshipDto.fromFriend(getTestUserInfo(friendId));
+                })
                 .toList();
     }
 
     public FriendshipStatusDto getRelationshipStatus(UUID currentUserId, UUID otherUserId) {
         validateDifferentUsers(currentUserId, otherUserId);
-        // ensureAccountExists(otherUserId);
+        // ensureAccountExists(otherUserId); // Tạm bỏ do chưa tích hợp module User.
 
+        FriendshipDto.UserInfo user = getTestUserInfo(otherUserId);
         return friendshipRepository.findBetween(currentUserId, otherUserId)
                 .map(friendship -> {
                     if (FriendshipEntity.ACCEPTED.equals(friendship.getStatus())) {
-                        return new FriendshipStatusDto(
-                                otherUserId, "FRIENDS", friendship.getId(), "Bạn bè");
+                        return toRelationshipStatus(user, "ACCEPTED", friendship.getId(), "Bạn bè", null);
                     }
-                    if (currentUserId.equals(friendship.getSenderId())) {
-                        return new FriendshipStatusDto(
-                                otherUserId, "REQUEST_SENT", friendship.getId(), "Đã gửi lời mời");
-                    }
-                    return new FriendshipStatusDto(
-                            otherUserId, "REQUEST_RECEIVED", friendship.getId(), "Bạn đã nhận lời mời kết bạn");
+                    String direction = currentUserId.equals(friendship.getSenderId())
+                            ? "SENT" : "RECEIVED";
+                    String message = "SENT".equals(direction)
+                            ? "Đã gửi lời mời" : "Bạn đã nhận lời mời kết bạn";
+                    return toRelationshipStatus(user, "PENDING", friendship.getId(), message, direction);
                 })
-                .orElseGet(() -> new FriendshipStatusDto(
-                        otherUserId, "NONE", null, "Thêm bạn"));
+                .orElseGet(() -> toRelationshipStatus(user, "NONE", null, "Thêm bạn", null));
+    }
+
+    private FriendshipStatusDto toRelationshipStatus(
+            FriendshipDto.UserInfo user,
+            String status,
+            UUID friendshipId,
+            String message,
+            String direction) {
+        return new FriendshipStatusDto(
+                user.id(), status, friendshipId, message,
+                user.id(), user.name(), user.avatarUrl(), user.isOnline(), direction);
     }
 
     private FriendshipEntity getPendingRequestForUpdate(UUID requestId) {

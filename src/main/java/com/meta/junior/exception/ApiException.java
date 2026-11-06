@@ -1,4 +1,4 @@
-package com.meta.junior.friendship.exception;
+package com.meta.junior.exception;
 
 public class ApiException extends RuntimeException {
     private final int statusCode;

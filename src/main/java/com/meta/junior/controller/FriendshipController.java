@@ -1,10 +1,10 @@
-package com.meta.junior.friendship.controller;
+package com.meta.junior.controller;
 
-import com.meta.junior.friendship.dto.ApiResponse;
-import com.meta.junior.friendship.dto.FriendshipDto;
-import com.meta.junior.friendship.dto.FriendshipStatusDto;
-import com.meta.junior.friendship.exception.ApiException;
-import com.meta.junior.friendship.service.FriendshipService;
+import com.meta.junior.dto.ApiResponse;
+import com.meta.junior.dto.FriendshipDto;
+import com.meta.junior.dto.FriendshipStatusDto;
+import com.meta.junior.exception.ApiException;
+import com.meta.junior.service.FriendshipService;
 import io.quarkus.runtime.LaunchMode;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
@@ -36,18 +36,12 @@ public class FriendshipController {
         return Response.ok(ApiResponse.success(result.message(), result.friendship())).build();
     }
 
+    // Một API GET trả cả lời mời đã gửi và đã nhận.
     @GET
-    @Path("/requests/received")
-    public Response getReceivedRequests(@HeaderParam("X-Test-User-Id") UUID testUserId) {
-        List<FriendshipDto> requests = friendshipService.getReceivedRequests(currentUserId(testUserId));
-        return Response.ok(ApiResponse.success("Lấy danh sách lời mời đã nhận thành công", requests)).build();
-    }
-
-    @GET
-    @Path("/requests/sent")
-    public Response getSentRequests(@HeaderParam("X-Test-User-Id") UUID testUserId) {
-        List<FriendshipDto> requests = friendshipService.getSentRequests(currentUserId(testUserId));
-        return Response.ok(ApiResponse.success("Lấy danh sách lời mời đã gửi thành công", requests)).build();
+    @Path("/requests")
+    public Response getRequests(@HeaderParam("X-Test-User-Id") UUID testUserId) {
+        FriendshipDto.RequestLists requests = friendshipService.getRequests(currentUserId(testUserId));
+        return Response.ok(ApiResponse.success("Lấy danh sách lời mời kết bạn thành công", requests)).build();
     }
 
     @PUT

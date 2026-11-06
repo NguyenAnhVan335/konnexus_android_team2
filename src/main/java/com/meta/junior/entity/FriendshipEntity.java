@@ -1,4 +1,4 @@
-package com.meta.junior.friendship.entity;
+package com.meta.junior.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
