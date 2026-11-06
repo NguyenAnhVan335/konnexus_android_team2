@@ -11,6 +11,7 @@ import com.meta.junior.dto.social_media.post.UpdatePostRequestDTO;
 import com.meta.junior.entity.Post;
 import com.meta.junior.entity.PostMedia;
 import com.meta.junior.entity.User;
+import com.meta.junior.repository.FriendshipRepo;
 import com.meta.junior.repository.PostRepo;
 import com.meta.junior.repository.UserRepo;
 import com.meta.junior.service.HashtagService;
@@ -34,6 +35,9 @@ public class PostServiceImpl implements PostService {
 
     @Inject
     UserRepo userRepo;
+
+    @Inject
+    FriendshipRepo friendshipRepo;
 
     @Inject
     HashtagService hashtagService;
@@ -84,6 +88,13 @@ public class PostServiceImpl implements PostService {
         // Kiểm tra quyền xem bài viết riêng tư
         if (post.getPrivacy() == PostPrivacy.PRIVATE && !post.getAuthor().getId().equals(currentUserId)) {
             throw new ForbiddenException("Bạn không có quyền xem bài viết riêng tư này");
+        }
+
+        // Kiểm tra quyền xem bài viết chỉ dành cho bạn bè (FRIENDS_ONLY)
+        if (post.getPrivacy() == PostPrivacy.FRIENDS_ONLY
+                && !post.getAuthor().getId().equals(currentUserId)
+                && !friendshipRepo.areFriends(currentUserId, post.getAuthor().getId())) {
+            throw new ForbiddenException("Bạn không có quyền xem bài viết chỉ dành cho bạn bè này");
         }
 
         List<String> tags = hashtagService.getHashtagNamesByPostId(post.getId());
