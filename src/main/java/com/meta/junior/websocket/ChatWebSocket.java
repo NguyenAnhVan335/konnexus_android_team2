@@ -89,13 +89,13 @@
                         ObjectNode disabledNode = objectMapper.createObjectNode();
                         disabledNode.put("type", "CHAT");
                         disabledNode.put("id", System.currentTimeMillis());
-                        disabledNode.put("user_id", "2d61b0d1-1512-494b-ba1d-bf1c55de1173");
+                        disabledNode.put("user_id", MessageService.CHARLES_BOT_ID.toString());
                         disabledNode.put("content", disableContent);
                         disabledNode.put("attachment_url", (String) null);
 
                         broadcastToRoom(UUID.fromString(conversation_id), objectMapper.writeValueAsString(disabledNode));
 
-                        messageService.sendMessage(UUID.fromString("2d61b0d1-1512-494b-ba1d-bf1c55de1173"),
+                        messageService.sendMessage(MessageService.CHARLES_BOT_ID,
                                 UUID.fromString(conversation_id),
                                 disableContent,
                                 null);
@@ -134,14 +134,14 @@
                             ObjectNode botMsgNode = objectMapper.createObjectNode();
                             botMsgNode.put("type", "CHAT");
                             botMsgNode.put("id", System.currentTimeMillis());
-                            botMsgNode.put("user_id", "2d61b0d1-1512-494b-ba1d-bf1c55de1173");
+                            botMsgNode.put("user_id", MessageService.CHARLES_BOT_ID.toString());
                             botMsgNode.put("content", aiSummary); // Trả về bản tóm tắt
                             botMsgNode.put("attachment_url", (String) null);
 
                             broadcastToRoom(UUID.fromString(conversation_id), objectMapper.writeValueAsString(botMsgNode));
 
                             messageService.sendMessage(
-                                    UUID.fromString("2d61b0d1-1512-494b-ba1d-bf1c55de1173"),
+                                    MessageService.CHARLES_BOT_ID,
                                     UUID.fromString(conversation_id),
                                     aiSummary,
                                     null
@@ -160,14 +160,14 @@
                             ObjectNode botMsgNode = objectMapper.createObjectNode();
                             botMsgNode.put("type", "CHAT");
                             botMsgNode.put("id", System.currentTimeMillis()); // ID tạm thời
-                            botMsgNode.put("user_id", "2d61b0d1-1512-494b-ba1d-bf1c55de1173");
+                            botMsgNode.put("user_id", MessageService.CHARLES_BOT_ID.toString());
                             botMsgNode.put("content", aiResponse);
                             botMsgNode.put("attachment_url", (String) null);
 
                             broadcastToRoom(UUID.fromString(conversation_id), objectMapper.writeValueAsString(botMsgNode));
 
                             messageService.sendMessage(
-                                            UUID.fromString("2d61b0d1-1512-494b-ba1d-bf1c55de1173"),
+                                            MessageService.CHARLES_BOT_ID,
                                             UUID.fromString(conversation_id),
                                             aiResponse,
                                             null

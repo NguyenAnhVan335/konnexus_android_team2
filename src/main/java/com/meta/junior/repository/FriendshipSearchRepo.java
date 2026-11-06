@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class FriendshipSearchRepo
-        implements PanacheRepositoryBase<Friendship, Long> {
+        implements PanacheRepositoryBase<Friendship, UUID> {
 
     public boolean areFriends(UUID user1, UUID user2) {
 

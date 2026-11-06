@@ -21,6 +21,9 @@ import java.util.UUID;
 @ApplicationScoped
 public class MessageService {
 
+    /** ID cố định của chatbot "Charles" trong bảng users (dùng để gửi tin nhắn thay bot). */
+    public static final UUID CHARLES_BOT_ID = UUID.fromString("2d61b0d1-1512-494b-ba1d-bf1c55de1173");
+
     @Inject
     ParticipantRepo paticipantRepo;
 
@@ -46,7 +49,7 @@ public class MessageService {
 
     @Transactional
     public Message sendMessage(UUID user_id, UUID conversation_id, String content, String attachment_url){
-        if(!user_id.equals(UUID.fromString("2d61b0d1-1512-494b-ba1d-bf1c55de1173"))){
+        if(!user_id.equals(CHARLES_BOT_ID)){
             long count = paticipantRepo.count("conversation_id = ?1 and user_id = ?2", conversation_id, user_id);
             if (count == 0) {
                 throw new WebApplicationException("Bạn không thể gửi tin nhắn vào phòng này", Response.Status.FORBIDDEN);

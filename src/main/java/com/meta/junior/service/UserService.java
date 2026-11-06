@@ -110,7 +110,12 @@ public class UserService {
     //Update user'status
     @Transactional
     public void updateUserStatus(UUID userId, boolean isOnline) {
-
+        User user = userRepo.findById(userId);
+        if (user == null) {
+            return;
+        }
+        user.set_online(isOnline);
+        user.setLast_seen(LocalDateTime.now());
     }
 
     @Transactional

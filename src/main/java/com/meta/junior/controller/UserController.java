@@ -1,8 +1,9 @@
 package com.meta.junior.controller;
-import com.cloudinary.api.ApiResponse;
+import com.meta.junior.common.ApiResponse;
 import com.meta.junior.dto.UpdateProfileDTO;
 import com.meta.junior.dto.UserDTO;
 import com.meta.junior.entity.User;
+import com.meta.junior.service.UserSearchService;
 import com.meta.junior.service.UserService;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
@@ -29,6 +30,9 @@ public class UserController {
     @Inject
     JsonWebToken jwt;
 
+    @Inject
+    UserSearchService userSearchService;
+
     @GET
     @Authenticated
     public Response getAll(){
@@ -50,8 +54,15 @@ public class UserController {
     @DELETE
     @Path("/{id}")
     @RolesAllowed("ADMIN")
-    public Response deleteUser(UUID id){
+    public Response deleteUser(@PathParam("id") UUID id){
             return userService.deleteUser(id);
+    }
+
+    @GET
+    @Path("/search")
+    public Response searchUsers(@QueryParam("keyword") String keyword){
+            UUID currentUserId = UUID.fromString(jwt.getSubject());
+            return Response.ok(ApiResponse.success("Tìm kiếm người dùng thành công", userSearchService.search(keyword, currentUserId))).build();
     }
 
 }

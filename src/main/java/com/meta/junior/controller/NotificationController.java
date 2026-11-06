@@ -17,7 +17,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.util.List;
 import java.util.UUID;
 
-@Path("/api/v1/nortifications")
+@Path("/api/v1/notifications")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
