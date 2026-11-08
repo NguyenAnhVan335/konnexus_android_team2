@@ -85,6 +85,22 @@ public class PostController {
     }
 
     /**
+     * Lấy bài viết nổi bật (trending) theo tương tác trong N ngày
+     */
+    @GET
+    @Path("/trending")
+    public Response getTrendingPosts(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size,
+            @QueryParam("days") @DefaultValue("7") int days
+    ) {
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        PageResponseDTO<PostResponseDTO> result = postService.getTrendingPosts(currentUserId, page, size, days);
+        return Response.ok(ApiResponse.success("Lấy danh sách bài viết nổi bật thành công", result))
+                .build();
+    }
+
+    /**
      * Cập nhật nội dung hoặc quyền riêng tư của bài viết (Chỉ tác giả)
      */
     @PUT

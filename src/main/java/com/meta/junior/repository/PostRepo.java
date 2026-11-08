@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @ApplicationScoped
 public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
@@ -268,6 +269,38 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
                         "publicPrivacy", PostPrivacy.PUBLIC,
                         "friendsPrivacy", PostPrivacy.FRIENDS_ONLY,
                         "acceptedStatus", FriendRequestStatus.ACCEPTED))
+                .page(page);
+    }
+
+    /**Lấy bài viết nổi bật (trending) trong N ngày gần nhất, xếp theo tương tác.*/
+    public PanacheQuery<Post> findTrending(UUID currentUserId, Page page, int days) {
+        LocalDateTime since = LocalDateTime.now().minusDays(Math.max(1, days));
+        return find("""
+                select p
+                from Post p
+                where p.isDeleted = false
+                  and p.createdAt >= :since
+                  and (
+                      p.privacy = :publicPrivacy
+                      or p.author.id = :currentUserId
+                      or (
+                          p.privacy = :friendsPrivacy
+                          and exists (
+                              select 1 from Friendship f
+                              where f.status = :acceptedStatus
+                                and ((f.sender.id = :currentUserId and f.receiver.id = p.author.id)
+                                     or (f.receiver.id = :currentUserId and f.sender.id = p.author.id))
+                          )
+                      )
+                  )
+                order by (p.like_count + p.comment_count) desc, p.createdAt desc
+                """,
+                Map.of(
+                        "publicPrivacy", PostPrivacy.PUBLIC,
+                        "friendsPrivacy", PostPrivacy.FRIENDS_ONLY,
+                        "acceptedStatus", FriendRequestStatus.ACCEPTED,
+                        "currentUserId", currentUserId,
+                        "since", since))
                 .page(page);
     }
 }

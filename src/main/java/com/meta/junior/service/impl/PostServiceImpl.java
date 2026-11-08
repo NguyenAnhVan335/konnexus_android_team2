@@ -2,6 +2,7 @@ package com.meta.junior.service.impl;
 
 import com.meta.junior.common.PostMediaType;
 import com.meta.junior.common.PostPrivacy;
+import com.meta.junior.common.ReactionType;
 import com.meta.junior.common.SystemRole;
 import com.meta.junior.dto.PageResponseDTO;
 import com.meta.junior.dto.social_media.post.CreatePostRequestDTO;
@@ -12,6 +13,7 @@ import com.meta.junior.entity.Post;
 import com.meta.junior.entity.PostMedia;
 import com.meta.junior.entity.User;
 import com.meta.junior.repository.FriendshipRepo;
+import com.meta.junior.repository.PostReactionRepo;
 import com.meta.junior.repository.PostRepo;
 import com.meta.junior.repository.UserRepo;
 import com.meta.junior.service.HashtagService;
@@ -25,6 +27,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -32,6 +35,9 @@ public class PostServiceImpl implements PostService {
 
     @Inject
     PostRepo postRepo;
+
+    @Inject
+    PostReactionRepo reactionRepo;
 
     @Inject
     UserRepo userRepo;
@@ -98,7 +104,12 @@ public class PostServiceImpl implements PostService {
         }
 
         List<String> tags = hashtagService.getHashtagNamesByPostId(post.getId());
-        return PostResponseDTO.fromEntity(post, tags);
+        PostResponseDTO dto = PostResponseDTO.fromEntity(post, tags);
+        reactionRepo.findByPostAndUser(postId, currentUserId).ifPresent(r -> {
+            dto.set_liked(true);
+            dto.setMy_reaction(r.getType().name());
+        });
+        return dto;
     }
 
     @Override
@@ -109,8 +120,19 @@ public class PostServiceImpl implements PostService {
         Page pageable = Page.of(pageIndex, pageSize);
         PanacheQuery<Post> query = postRepo.findFeed(currentUserId, pageable);
 
-        List<PostResponseDTO> items = query.list().stream()
-                .map(p -> PostResponseDTO.fromEntity(p, hashtagService.getHashtagNamesByPostId(p.getId())))
+        List<Post> posts = query.list();
+        List<UUID> postIds = posts.stream().map(Post::getId).toList();
+        Map<UUID, ReactionType> reacted = reactionRepo.findReactedTypes(currentUserId, postIds);
+
+        List<PostResponseDTO> items = posts.stream()
+                .map(p -> {
+                    PostResponseDTO dto = PostResponseDTO.fromEntity(
+                            p, hashtagService.getHashtagNamesByPostId(p.getId()));
+                    boolean liked = reacted.containsKey(p.getId());
+                    dto.set_liked(liked);
+                    dto.setMy_reaction(liked ? reacted.get(p.getId()).name() : null);
+                    return dto;
+                })
                 .toList();
 
         return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
@@ -129,8 +151,46 @@ public class PostServiceImpl implements PostService {
         Page pageable = Page.of(pageIndex, pageSize);
         PanacheQuery<Post> query = postRepo.findUserTimeline(currentUserId, targetUserId, pageable);
 
-        List<PostResponseDTO> items = query.list().stream()
-                .map(p -> PostResponseDTO.fromEntity(p, hashtagService.getHashtagNamesByPostId(p.getId())))
+        List<Post> posts = query.list();
+        List<UUID> postIds = posts.stream().map(Post::getId).toList();
+        Map<UUID, ReactionType> reacted = reactionRepo.findReactedTypes(currentUserId, postIds);
+
+        List<PostResponseDTO> items = posts.stream()
+                .map(p -> {
+                    PostResponseDTO dto = PostResponseDTO.fromEntity(
+                            p, hashtagService.getHashtagNamesByPostId(p.getId()));
+                    boolean liked = reacted.containsKey(p.getId());
+                    dto.set_liked(liked);
+                    dto.setMy_reaction(liked ? reacted.get(p.getId()).name() : null);
+                    return dto;
+                })
+                .toList();
+
+        return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
+    }
+
+    @Override
+    public PageResponseDTO<PostResponseDTO> getTrendingPosts(UUID currentUserId, int page, int size, int days) {
+        int pageIndex = Math.max(0, page);
+        int pageSize = Math.min(Math.max(1, size), 50);
+        int safeDays = Math.min(Math.max(1, days), 365);
+
+        Page pageable = Page.of(pageIndex, pageSize);
+        PanacheQuery<Post> query = postRepo.findTrending(currentUserId, pageable, safeDays);
+
+        List<Post> posts = query.list();
+        List<UUID> postIds = posts.stream().map(Post::getId).toList();
+        Map<UUID, ReactionType> reacted = reactionRepo.findReactedTypes(currentUserId, postIds);
+
+        List<PostResponseDTO> items = posts.stream()
+                .map(p -> {
+                    PostResponseDTO dto = PostResponseDTO.fromEntity(
+                            p, hashtagService.getHashtagNamesByPostId(p.getId()));
+                    boolean liked = reacted.containsKey(p.getId());
+                    dto.set_liked(liked);
+                    dto.setMy_reaction(liked ? reacted.get(p.getId()).name() : null);
+                    return dto;
+                })
                 .toList();
 
         return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());

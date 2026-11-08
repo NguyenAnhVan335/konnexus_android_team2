@@ -1,4 +1,5 @@
 package com.meta.junior.service;
+import com.meta.junior.common.NortificationType;
 import com.meta.junior.dto.DeleteNotificationDTO;
 import com.meta.junior.dto.NotificationDTO;
 import com.meta.junior.dto.PageResponseDTO;
@@ -39,6 +40,23 @@ public class NotificationService {
         List<Notification> items = query.stream().toList();
 
         return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
+    }
+
+    /** Tạo thông báo tự động khi có tương tác (dùng nội bộ, không qua endpoint thủ công). */
+    @Transactional
+    public void notify(UUID actorId, UUID receiverId, NortificationType type, UUID postId, UUID commentId) {
+        if (actorId == null || receiverId == null || actorId.equals(receiverId)) {
+            return;
+        }
+        Notification notification = new Notification();
+        notification.setReceiver_id(receiverId);
+        notification.setActor_id(actorId);
+        notification.setType(type);
+        notification.setPost_id(postId);
+        notification.setComment_id(commentId);
+        notification.set_read(false);
+        notification.setCreated_at(LocalDateTime.now());
+        notiRepo.persist(notification);
     }
 
     @Transactional

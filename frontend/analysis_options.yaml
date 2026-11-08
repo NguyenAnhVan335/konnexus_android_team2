@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    always_declare_return_types: true
+    prefer_const_constructors: true
+    prefer_final_locals: true
+    avoid_print: true
+    use_super_parameters: true
+
+analyzer:
+  errors:
+    # Các file môi trường/thiết bị do Flutter sinh ra không cần phân tích.
+    invalid_annotation_target: ignore
+  exclude:
+    - build/**
+    - android/**

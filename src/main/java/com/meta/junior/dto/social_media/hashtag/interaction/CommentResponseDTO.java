@@ -18,6 +18,8 @@ public class CommentResponseDTO {
     private String content;
     private UUID parentId;
     private LocalDateTime createdAt;
+    private long reactionCount;
+    private String myReaction;
 
     public static CommentResponseDTO fromEntity(PostComment comment) {
         return CommentResponseDTO.builder()

@@ -1,5 +1,6 @@
 package com.meta.junior.service.impl;
 
+import com.meta.junior.common.NortificationType;
 import com.meta.junior.dto.PageResponseDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.CommentResponseDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.CreateCommentRequestDTO;
@@ -13,6 +14,7 @@ import com.meta.junior.repository.PostCommentRepo;
 import com.meta.junior.repository.PostReactionRepo;
 import com.meta.junior.repository.PostRepo;
 import com.meta.junior.repository.UserRepo;
+import com.meta.junior.service.NotificationService;
 import com.meta.junior.service.PostInteractionService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -41,9 +43,12 @@ public class PostInteractionServiceImpl implements PostInteractionService {
     @Inject
     PostCommentRepo commentRepo;
 
+    @Inject
+    NotificationService notificationService;
+
     @Override
     @Transactional
-    public void toggleReaction(UUID currentUserId, UUID postId, ReactionRequestDTO dto) {
+    public boolean toggleReaction(UUID currentUserId, UUID postId, ReactionRequestDTO dto) {
         Post post = postRepo.findActiveById(postId)
                 .orElseThrow(() -> new NotFoundException("Bài viết không tồn tại hoặc đã bị xóa"));
 
@@ -57,8 +62,10 @@ public class PostInteractionServiceImpl implements PostInteractionService {
             if (reaction.getType() == dto.getType()) {
                 reactionRepo.delete(reaction);
                 post.setLike_count(Math.max(0, post.getLike_count() - 1));
+                return false;
             } else {
                 reaction.setType(dto.getType());
+                return true;
             }
         } else {
             PostReaction newReaction = PostReaction.builder()
@@ -68,6 +75,8 @@ public class PostInteractionServiceImpl implements PostInteractionService {
                     .build();
             reactionRepo.persist(newReaction);
             post.setLike_count(post.getLike_count() + 1);
+            notificationService.notify(currentUserId, post.getAuthor().getId(), NortificationType.LIKE_POST, postId, null);
+            return true;
         }
     }
 
@@ -96,11 +105,17 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         commentRepo.persist(comment);
         post.setComment_count(post.getComment_count() + 1);
 
+        if (parentComment != null) {
+            notificationService.notify(currentUserId, parentComment.getAuthor().getId(), NortificationType.REPLY_POST, postId, comment.getId());
+        } else {
+            notificationService.notify(currentUserId, post.getAuthor().getId(), NortificationType.COMMENT_POST, postId, comment.getId());
+        }
+
         return CommentResponseDTO.fromEntity(comment);
     }
 
     @Override
-    public PageResponseDTO<CommentResponseDTO> getPostComments(UUID postId, int page, int size) {
+    public PageResponseDTO<CommentResponseDTO> getPostComments(UUID currentUserId, UUID postId, int page, int size) {
         int pageIndex = Math.max(0, page);
         int pageSize = Math.min(Math.max(1, size), 50);
 
@@ -108,7 +123,15 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         PanacheQuery<PostComment> query = commentRepo.findByPostId(postId, pageable);
 
         List<CommentResponseDTO> items = query.list().stream()
-                .map(CommentResponseDTO::fromEntity)
+                .map(comment -> {
+                    CommentResponseDTO dto = CommentResponseDTO.fromEntity(comment);
+                    dto.setReactionCount(reactionRepo.countByCommentId(comment.getId()));
+                    reactionRepo.findByCommentAndUser(comment.getId(), currentUserId)
+                            .map(PostReaction::getType)
+                            .map(Enum::name)
+                            .ifPresent(dto::setMyReaction);
+                    return dto;
+                })
                 .toList();
 
         return PageResponseDTO.of(items, query.page().index, query.page().size, query.count(), query.pageCount());
@@ -128,6 +151,23 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         }
 
         comment.setContent("Bình luận đã bị xóa.");
+    }
+
+    @Override
+    @Transactional
+    public CommentResponseDTO editComment(UUID currentUserId, UUID commentId, String content) {
+        PostComment comment = commentRepo.findActiveById(commentId)
+                .orElseThrow(() -> new NotFoundException("Bình luận không tồn tại hoặc đã bị xóa"));
+
+        if (!comment.getAuthor().getId().equals(currentUserId)) {
+            throw new ForbiddenException("Bạn không có quyền chỉnh sửa bình luận này");
+        }
+
+        comment.setContent(content.trim());
+
+        CommentResponseDTO dto = CommentResponseDTO.fromEntity(comment);
+        dto.setReactionCount(reactionRepo.countByCommentId(comment.getId()));
+        return dto;
     }
 
     @Override
@@ -153,7 +193,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
 
     @Override
     @Transactional
-    public void toggleCommentReaction(UUID currentUserId, UUID commentId, ReactionRequestDTO dto) {
+    public boolean toggleCommentReaction(UUID currentUserId, UUID commentId, ReactionRequestDTO dto) {
         PostComment comment = commentRepo.findActiveById(commentId)
                 .orElseThrow(() -> new NotFoundException("Bình luận không tồn tại hoặc đã bị xóa"));
 
@@ -166,8 +206,10 @@ public class PostInteractionServiceImpl implements PostInteractionService {
             PostReaction reaction = existing.get();
             if (reaction.getType() == dto.getType()) {
                 reactionRepo.delete(reaction);
+                return false;
             } else {
                 reaction.setType(dto.getType());
+                return true;
             }
         } else {
             PostReaction reaction = PostReaction.builder()
@@ -177,6 +219,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
                     .type(dto.getType())
                     .build();
             reactionRepo.persist(reaction);
+            return true;
         }
     }
 

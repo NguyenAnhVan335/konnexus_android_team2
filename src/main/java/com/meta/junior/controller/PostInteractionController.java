@@ -6,6 +6,7 @@ import com.meta.junior.dto.social_media.hashtag.interaction.CommentResponseDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.CreateCommentRequestDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.ReactionRequestDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.ReactionUserResponseDTO;
+import com.meta.junior.dto.social_media.hashtag.interaction.UpdateCommentRequestDTO;
 import com.meta.junior.service.PostInteractionService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -40,8 +41,8 @@ public class PostInteractionController {
             @Valid @NotNull ReactionRequestDTO dto
     ) {
         UUID currentUserId = UUID.fromString(jwt.getSubject());
-        interactionService.toggleReaction(currentUserId, postId, dto);
-        return Response.ok(ApiResponse.success("Thực hiện tương tác thành công", null)).build();
+        boolean active = interactionService.toggleReaction(currentUserId, postId, dto);
+        return Response.ok(ApiResponse.success("Thực hiện tương tác thành công", active)).build();
     }
 
     /**
@@ -70,7 +71,8 @@ public class PostInteractionController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        PageResponseDTO<CommentResponseDTO> result = interactionService.getPostComments(postId, page, size);
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        PageResponseDTO<CommentResponseDTO> result = interactionService.getPostComments(currentUserId, postId, page, size);
         return Response.ok(ApiResponse.success("Lấy danh sách bình luận thành công", result)).build();
     }
 
@@ -83,6 +85,20 @@ public class PostInteractionController {
         UUID currentUserId = UUID.fromString(jwt.getSubject());
         interactionService.deleteComment(currentUserId, commentId);
         return Response.ok(ApiResponse.success("Đã xóa bình luận thành công", null)).build();
+    }
+
+    /**
+     * Chỉnh sửa nội dung bình luận (chỉ tác giả bình luận)
+     */
+    @PUT
+    @Path("/comments/{commentId}")
+    public Response editComment(
+            @PathParam("commentId") UUID commentId,
+            @Valid @NotNull UpdateCommentRequestDTO dto
+    ) {
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        CommentResponseDTO result = interactionService.editComment(currentUserId, commentId, dto.getContent());
+        return Response.ok(ApiResponse.success("Đã cập nhật bình luận", result)).build();
     }
 
     /**
@@ -106,8 +122,8 @@ public class PostInteractionController {
             @PathParam("commentId") UUID commentId,
             @Valid @NotNull ReactionRequestDTO dto) {
         UUID currentUserId = UUID.fromString(jwt.getSubject());
-        interactionService.toggleCommentReaction(currentUserId, commentId, dto);
-        return Response.ok(ApiResponse.success("Thực hiện tương tác thành công", null)).build();
+        boolean active = interactionService.toggleCommentReaction(currentUserId, commentId, dto);
+        return Response.ok(ApiResponse.success("Thực hiện tương tác thành công", active)).build();
     }
 
     /** Lấy danh sách Reaction của bình luận có phân trang */

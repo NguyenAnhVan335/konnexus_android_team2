@@ -65,5 +65,14 @@ public class UserController {
             return Response.ok(ApiResponse.success("Tìm kiếm người dùng thành công", userSearchService.search(keyword, currentUserId))).build();
     }
 
+    /** Cập nhật trạng thái online/offline của người dùng hiện tại. */
+    @PUT
+    @Path("/status")
+    public Response updateStatus(@QueryParam("online") boolean online){
+            UUID currentUserId = UUID.fromString(jwt.getSubject());
+            userService.updateUserStatus(currentUserId, online);
+            return Response.ok(ApiResponse.success("Đã cập nhật trạng thái hoạt động", null)).build();
+    }
+
 }
 

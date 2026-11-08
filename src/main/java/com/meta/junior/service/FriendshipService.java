@@ -1,7 +1,7 @@
 package com.meta.junior.service;
 
 import com.meta.junior.common.FriendRequestStatus;
-import com.meta.junior.dto.PageResponseDTO;
+import com.meta.junior.common.NortificationType;
 import com.meta.junior.dto.social_media.friendship.FriendshipRequestDTO;
 import com.meta.junior.dto.social_media.friendship.FriendshipResponseDTO;
 import com.meta.junior.entity.Friendship;
@@ -15,6 +15,7 @@ import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,6 +27,9 @@ public class FriendshipService {
 
     @Inject
     UserRepo userRepo;
+
+    @Inject
+    NotificationService notificationService;
 
     /**
      * UC: Gửi lời mời kết bạn
@@ -101,6 +105,7 @@ public class FriendshipService {
 
         // 7. Lưu database
         friendshipRepo.persistAndFlush(friendship);
+        notificationService.notify(senderId, receiverId, NortificationType.FRIEND_REQUEST, null, null);
         return FriendshipResponseDTO.from(friendship);
     }
 
@@ -166,8 +171,58 @@ public class FriendshipService {
         return FriendshipResponseDTO.from(request);
     }
 
-    public PageResponseDTO<User> getAllFriends(UUID currentUserId, int page, int size) {
-        return friendshipRepo.getFriends(currentUserId, page, size);
+    public List<FriendshipResponseDTO> getAllFriends(UUID currentUserId) {
+        return friendshipRepo.findFriends(currentUserId).stream()
+                .map(FriendshipResponseDTO::from)
+                .toList();
+    }
+
+    public List<FriendshipResponseDTO> getReceivedRequests(UUID userId) {
+        return friendshipRepo.findPendingReceived(userId).stream()
+                .map(FriendshipResponseDTO::from)
+                .toList();
+    }
+
+    public List<FriendshipResponseDTO> getSentRequests(UUID userId) {
+        return friendshipRepo.findPendingSent(userId).stream()
+                .map(FriendshipResponseDTO::from)
+                .toList();
+    }
+
+    @Transactional
+    public void cancelRequest(UUID senderId, UUID requestId) {
+        Friendship request = friendshipRepo.find("id = ?1 and sender.id = ?2", requestId, senderId).firstResult();
+        if (request == null || request.getStatus() != FriendRequestStatus.PENDING) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity(Map.of("message", "Không tìm thấy lời mời kết bạn"))
+                            .build()
+            );
+        }
+        friendshipRepo.delete(request);
+    }
+
+    public Map<String, Object> getRelationshipStatus(UUID currentUserId, UUID otherUserId) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        if (currentUserId.equals(otherUserId)) {
+            result.put("status", "SELF");
+            return result;
+        }
+        var friendship = friendshipRepo.findBetween(currentUserId, otherUserId);
+        if (friendship.isEmpty()) {
+            result.put("status", "NONE");
+            return result;
+        }
+        Friendship f = friendship.get();
+        if (f.getStatus() == FriendRequestStatus.ACCEPTED) {
+            result.put("status", "FRIENDS");
+        } else if (currentUserId.equals(f.getSender().getId())) {
+            result.put("status", "REQUEST_SENT");
+        } else {
+            result.put("status", "REQUEST_RECEIVED");
+        }
+        result.put("friendshipId", f.getId());
+        return result;
     }
 
     @Transactional

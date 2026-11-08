@@ -30,6 +30,11 @@ public interface PostService {
     PageResponseDTO<PostResponseDTO> getUserTimeline(UUID currentUserId, UUID targetUserId, int page, int size);
 
     /**
+     * Lấy danh sách bài viết nổi bật (trending) theo tương tác trong N ngày
+     */
+    PageResponseDTO<PostResponseDTO> getTrendingPosts(UUID currentUserId, int page, int size, int days);
+
+    /**
      * Cập nhật nội dung hoặc quyền riêng tư của bài viết (Chỉ tác giả)
      */
     PostResponseDTO updatePost(UUID currentUserId, UUID postId, UpdatePostRequestDTO dto);

@@ -13,12 +13,14 @@ import com.meta.junior.repository.UserRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -64,6 +66,35 @@ public class ConversationService {
 
     public List<Conversation> getUserConversations(UUID userId){
         return conversationRepo.getConversations(userId);
+    }
+
+    @Transactional
+    public Conversation getOrCreateDirect(UUID userId, UUID otherUserId){
+        if (userId.equals(otherUserId)) {
+            throw new WebApplicationException("Không thể nhắn tin cho chính mình", Response.Status.BAD_REQUEST);
+        }
+        User other = userRepo.findByIdOptional(otherUserId)
+                .orElseThrow(() -> new WebApplicationException("Không tìm thấy người dùng", Response.Status.NOT_FOUND));
+
+        Optional<Conversation> existing = conversationRepo.findDirectBetween(userId, otherUserId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        Conversation conversation = new Conversation();
+        conversation.setConversation_type("DIRECT");
+        conversation.setTitle(other.getUsername());
+        conversation.setCreated_by(userId);
+        conversation.setCreated_at(LocalDateTime.now());
+        conversation.setAvatar_url(other.getAvatar_url());
+        conversationRepo.persist(conversation);
+
+        List<Participant> participants = new ArrayList<>();
+        participants.add(new Participant(GroupRole.MEMBER, userId, conversation.getId()));
+        participants.add(new Participant(GroupRole.MEMBER, otherUserId, conversation.getId()));
+        paticipantRepository.persist(participants);
+
+        return conversation;
     }
 
     public List<UUID> getOnlineUsersId(UUID conversationId) {

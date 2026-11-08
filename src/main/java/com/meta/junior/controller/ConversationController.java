@@ -61,6 +61,14 @@ public class ConversationController {
         }
     }
 
+    @POST
+    @Path("/direct/{userId}")
+    @Authenticated
+    public Response getOrCreateDirect(@PathParam("userId") UUID otherUserId){
+        UUID myId = UUID.fromString(jwt.getSubject());
+        return Response.ok(conversationService.getOrCreateDirect(myId, otherUserId)).build();
+    }
+
     @GET
     @Path("/{id}/online-users")
     @Authenticated

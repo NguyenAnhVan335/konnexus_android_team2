@@ -1,0 +1,29 @@
+name: konnexus
+description: "Konexus - ứng dụng mạng xã hội di động (Flutter client cho backend Quarkus)."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Gọi REST API của backend Quarkus.
+  http: ^1.2.2
+  # Lưu token/phiên đăng nhập và tuỳ chọn giao diện trên thiết bị.
+  shared_preferences: ^2.3.2
+  # Cache ảnh mạng (avatar, ảnh bài viết) để không tải lại mỗi lần cuộn.
+  cached_network_image: ^3.4.1
+  # Chia sẻ bài viết qua sheet hệ thống (share sheet).
+  share_plus: ^10.1.4
+  # Chọn ảnh từ thư viện/máy ảnh để upload avatar & media.
+  image_picker: ^1.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

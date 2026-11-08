@@ -28,6 +28,7 @@ public class PostResponseDTO {
     private int comment_count;
     private boolean is_liked;
     private boolean is_edited;
+    private String my_reaction;
     private List<PostMediaDTO> media_list;
     @Builder.Default
     private List<String> hashtags = Collections.emptyList();
