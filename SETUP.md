@@ -184,8 +184,10 @@ Với **CMD**: `set DB_JDBC_URL=...`
 - **Groq**: <https://console.groq.com/keys> → *Create API Key* → gán vào `GROQ_API_KEY`.
   Model đang dùng: `llama-3.3-70b-versatile` (khai báo trong `application.properties`).
 
-> Nếu **không cần** upload media/chatbot, vẫn phải đặt biến (có thể để chuỗi rỗng)
-> vì `application.properties` tham chiếu trực tiếp `${CLOUDINARY_URL}` / `${GROQ_API_KEY}`.
+> Backend cần các biến này để khởi động và chạy đầy đủ tính năng. Nếu thiếu
+> `CLOUDINARY_URL` hoặc `GROQ_API_KEY`, backend có thể lỗi khi khởi động hoặc khi
+> gọi upload/chatbot. Chuỗi `CLOUDINARY_URL` phải đúng định dạng
+> `cloudinary://<api_key>:<api_secret>@<cloud_name>`.
 
 ### 5.4 JWT key
 
