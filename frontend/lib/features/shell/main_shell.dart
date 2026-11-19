@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/di/app_scope.dart';
+import '../../state/notifications_controller.dart';
 import '../../state/session_controller.dart';
 import '../../state/users_directory.dart';
 import '../../widgets/konexus_bottom_nav.dart';
@@ -24,6 +25,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
   SessionController? _session;
   UsersDirectory? _directory;
+  NotificationsController? _notifications;
   Timer? _heartbeat;
 
   static const List<Widget> _pages = <Widget>[
@@ -41,6 +43,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     _heartbeat = Timer.periodic(const Duration(seconds: 30), (_) {
       _session?.setOnline(true);
       _directory?.ensureLoaded(force: true);
+      _notifications?.refreshQuietly();
     });
   }
 
@@ -49,6 +52,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     super.didChangeDependencies();
     _session = AppScope.of(context).session;
     _directory = AppScope.of(context).usersDirectory;
+    _notifications = AppScope.of(context).notifications;
+    _notifications?.ensureLoaded();
   }
 
   @override

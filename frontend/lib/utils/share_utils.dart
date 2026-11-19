@@ -9,13 +9,13 @@ Future<void> sharePost(PostModel post) async {
   final String content = (post.content ?? '').trim();
   final String link = '${ApiConfig.normalizedBaseUrl}/api/v1/posts/${post.id}';
   final String text = <String>[
-    '${post.author.displayName} trên Konexus',
+    '${post.author.displayName} trên Konnexus',
     if (content.isNotEmpty) content,
     link,
   ].join('\n\n');
   await Share.share(
     text,
-    subject: '${post.author.displayName} trên Konexus',
+    subject: '${post.author.displayName} trên Konnexus',
   );
 }
 
@@ -23,7 +23,7 @@ Future<void> sharePost(PostModel post) async {
 Future<void> shareUser(UserModel user) async {
   final String link = '${ApiConfig.normalizedBaseUrl}/api/users/${user.id}';
   await Share.share(
-    '${user.displayName} trên Konexus\n\n$link',
-    subject: '${user.displayName} trên Konexus',
+    '${user.displayName} trên Konnexus\n\n$link',
+    subject: '${user.displayName} trên Konnexus',
   );
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/api/api_exception.dart';
 import '../../core/di/app_scope.dart';
+import '../../models/notification_model.dart';
 import '../../navigation/app_arguments.dart';
 import '../../navigation/app_routes.dart';
 import '../../state/notifications_controller.dart';
+import '../../widgets/feedback.dart';
 import '../../widgets/konexus_app_bar.dart';
 import '../../widgets/state_views.dart';
 import 'widgets/notification_tile.dart';
@@ -27,15 +30,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
       return;
     }
     _initialized = true;
-    _controller =
-        NotificationsController(AppScope.of(context).notificationService);
+    // Dùng controller dùng chung để badge trên chuông và trang này luôn đồng bộ.
+    _controller = AppScope.of(context).notifications;
     _controller!.load();
   }
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
+  Future<void> _handleTap(NotificationItem item) async {
+    final NotificationsController? controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    try {
+      await controller.markAsRead(item.id);
+    } on ApiException catch (error) {
+      if (mounted) {
+        showAppSnackBar(context, error.userMessage, isError: true);
+      }
+    }
+    if (!mounted) {
+      return;
+    }
+    final String? postId = item.postId;
+    if (postId != null && postId.isNotEmpty) {
+      await _openPost(postId);
+    }
+  }
+
+  Future<void> _markAllRead() async {
+    final NotificationsController? controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    try {
+      await controller.markAllAsRead();
+    } on ApiException catch (error) {
+      if (mounted) {
+        showAppSnackBar(context, error.userMessage, isError: true);
+      }
+    }
   }
 
   @override
@@ -53,7 +85,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             actions: <Widget>[
               if (controller.unreadCount > 0)
                 TextButton(
-                  onPressed: controller.markAllAsRead,
+                  onPressed: _markAllRead,
                   child: const Text('Đọc tất cả'),
                 ),
             ],
@@ -65,6 +97,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
               children: <Widget>[
                 if (controller.isLoading && controller.items.isEmpty)
                   const LoadingView(message: 'Đang tải thông báo...')
+                else if (controller.error != null && controller.items.isEmpty)
+                  ErrorView(
+                    message: controller.error!,
+                    onRetry: controller.load,
+                  )
                 else if (controller.items.isEmpty)
                   const EmptyView(
                     message: 'Bạn chưa có thông báo nào.',
@@ -74,9 +111,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   for (final item in controller.items)
                     NotificationTile(
                       item: item,
-                      onTap: item.postId != null
-                          ? () => _openPost(item.postId!)
-                          : null,
+                      onTap: () => _handleTap(item),
                     ),
               ],
             ),

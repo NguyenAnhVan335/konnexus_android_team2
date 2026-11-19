@@ -1,6 +1,7 @@
 package com.meta.junior.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.meta.junior.common.NortificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -38,6 +39,7 @@ public class Notification {
     private UUID comment_id;
 
     @Column(name = "is_read")
+    @JsonProperty("is_read")
     private boolean is_read;
 
     @Column(name = "created_at")

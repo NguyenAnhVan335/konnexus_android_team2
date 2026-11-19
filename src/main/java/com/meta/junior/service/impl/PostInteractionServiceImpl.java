@@ -1,5 +1,6 @@
 package com.meta.junior.service.impl;
 
+import com.meta.junior.common.ActivityType;
 import com.meta.junior.common.NortificationType;
 import com.meta.junior.dto.PageResponseDTO;
 import com.meta.junior.dto.social_media.hashtag.interaction.CommentResponseDTO;
@@ -14,6 +15,7 @@ import com.meta.junior.repository.PostCommentRepo;
 import com.meta.junior.repository.PostReactionRepo;
 import com.meta.junior.repository.PostRepo;
 import com.meta.junior.repository.UserRepo;
+import com.meta.junior.service.ActivityLogService;
 import com.meta.junior.service.NotificationService;
 import com.meta.junior.service.PostInteractionService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -46,6 +48,9 @@ public class PostInteractionServiceImpl implements PostInteractionService {
     @Inject
     NotificationService notificationService;
 
+    @Inject
+    ActivityLogService activityLogService;
+
     @Override
     @Transactional
     public boolean toggleReaction(UUID currentUserId, UUID postId, ReactionRequestDTO dto) {
@@ -65,6 +70,8 @@ public class PostInteractionServiceImpl implements PostInteractionService {
                 return false;
             } else {
                 reaction.setType(dto.getType());
+                // Đổi loại cảm xúc cũng là một hoạt động mới của người dùng.
+                activityLogService.log(currentUserId, ActivityType.REACTION, postId, post.getContent());
                 return true;
             }
         } else {
@@ -76,6 +83,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
             reactionRepo.persist(newReaction);
             post.setLike_count(post.getLike_count() + 1);
             notificationService.notify(currentUserId, post.getAuthor().getId(), NortificationType.LIKE_POST, postId, null);
+            activityLogService.log(currentUserId, ActivityType.REACTION, postId, post.getContent());
             return true;
         }
     }
@@ -110,11 +118,13 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         } else {
             notificationService.notify(currentUserId, post.getAuthor().getId(), NortificationType.COMMENT_POST, postId, comment.getId());
         }
+        activityLogService.log(currentUserId, ActivityType.COMMENT, comment.getId(), dto.getContent());
 
         return CommentResponseDTO.fromEntity(comment);
     }
 
     @Override
+    @Transactional
     public PageResponseDTO<CommentResponseDTO> getPostComments(UUID currentUserId, UUID postId, int page, int size) {
         int pageIndex = Math.max(0, page);
         int pageSize = Math.min(Math.max(1, size), 50);

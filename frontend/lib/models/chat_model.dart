@@ -1,8 +1,7 @@
 /// Model cho module Tin nhắn.
 ///
-/// Backend hiện chưa có endpoint chat (chỉ có dependency websocket trong pom.xml),
-/// nên dữ liệu được cấp bởi `MockChatService`. Model được giữ tách khỏi UI để khi
-/// backend bổ sung chỉ cần thay service.
+/// Dữ liệu được cấp bởi `ApiChatService` (REST + WebSocket). Model được giữ tách
+/// khỏi UI.
 class ChatThread {
   const ChatThread({
     required this.id,

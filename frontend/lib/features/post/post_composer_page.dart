@@ -22,7 +22,7 @@ import 'widgets/media_input_dialog.dart';
 ///
 /// - Tạo: `POST /api/v1/posts` (201) với `content`, `privacy`, `media_list`.
 /// - Sửa: `PUT /api/v1/posts/{id}` — backend thay thế toàn bộ `media_list`.
-/// - Media nhập bằng URL vì backend chưa có endpoint upload ảnh.
+/// - Media nhập bằng URL hoặc tải ảnh từ thư viện (`POST /api/upload`).
 class PostComposerPage extends StatefulWidget {
   const PostComposerPage({super.key, required this.args});
 
@@ -108,9 +108,9 @@ class _PostComposerPageState extends State<PostComposerPage> {
       }
       setState(
           () => _media.add(PostMedia(url: url, kind: MediaKind.image)));
-    } catch (_) {
+    } on ApiException catch (error) {
       if (mounted) {
-        showAppSnackBar(context, 'Tải ảnh lên thất bại', isError: true);
+        showAppSnackBar(context, error.userMessage, isError: true);
       }
     }
   }

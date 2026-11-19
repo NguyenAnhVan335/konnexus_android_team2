@@ -38,8 +38,10 @@ class UserModel {
       username: asString(json['username']) ?? '',
       email: asString(json['email']),
       avatarUrl: asString(json['avatar_url']) ?? asString(json['avatarUrl']),
-      // Lombok sinh getter `is_online()` nên Jackson có thể trả `online`.
-      isOnline: asBool(json['is_online'], fallback: asBool(json['online'])),
+      // Lombok sinh getter `is_online()` nên Jackson có thể trả `_online`;
+      // ưu tiên `is_online` nhưng vẫn đọc các biến thể để không bị "luôn offline".
+      isOnline: asBool(json['is_online'],
+          fallback: asBool(json['_online'], fallback: asBool(json['online']))),
       note: asString(json['note']),
       birthday: parseApiDate(json['birthday']),
       createdAt: parseApiDate(json['created_at']),

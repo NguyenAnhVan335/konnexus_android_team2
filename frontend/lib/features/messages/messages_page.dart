@@ -10,9 +10,7 @@ import '../../widgets/konexus_app_bar.dart';
 import '../../widgets/state_views.dart';
 import 'widgets/chat_thread_tile.dart';
 
-/// Danh sách cuộc trò chuyện.
-///
-/// **Dữ liệu mẫu**: backend chưa có API tin nhắn (xem `MockChatService`).
+/// Danh sách cuộc trò chuyện (gọi REST qua `ApiChatService`).
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
 
@@ -44,6 +42,23 @@ class _MessagesPageState extends State<MessagesPage> {
     super.dispose();
   }
 
+  Future<void> _createGroup() async {
+    final Object? result =
+        await Navigator.of(context).pushNamed(AppRoutes.createGroup);
+    if (!mounted || result is! ChatThread) {
+      return;
+    }
+    final ChatThread thread = result;
+    await _controller?.loadThreads();
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushNamed(
+      AppRoutes.chat,
+      arguments: ChatArgs(thread: thread),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final MessagesController? controller = _controller;
@@ -55,6 +70,11 @@ class _MessagesPageState extends State<MessagesPage> {
       appBar: KonexusAppBar(
         title: 'Tin nhắn',
         onAvatarTap: () => Navigator.of(context).pushNamed(AppRoutes.profile),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Tạo nhóm chat',
+        onPressed: _createGroup,
+        child: const Icon(Icons.group_add_outlined),
       ),
       body: ListenableBuilder(
         listenable: controller,
@@ -71,7 +91,7 @@ class _MessagesPageState extends State<MessagesPage> {
           return RefreshIndicator(
             onRefresh: controller.loadThreads,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
               children: <Widget>[
                 TextField(
                   controller: _searchController,

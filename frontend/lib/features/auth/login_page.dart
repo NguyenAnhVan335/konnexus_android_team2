@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../config/api_config.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/di/app_scope.dart';
 import '../../navigation/app_routes.dart';
@@ -9,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_logo.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/feedback.dart';
 
@@ -88,29 +88,13 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'K',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                  const Center(
+                    child: AppLogo(size: 80),
                   ),
                   const SizedBox(height: 18),
                   const Center(
                     child: Text(
-                      'Konexus',
+                      'Konnexus',
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -205,29 +189,6 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text('Đăng ký'),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'Máy chủ: ${ApiConfig.normalizedBaseUrl}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Android Emulator dùng 10.0.2.2 để trỏ tới backend trên máy tính.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      height: 1.35,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.textMuted,
-                    ),
                   ),
                 ],
               ),

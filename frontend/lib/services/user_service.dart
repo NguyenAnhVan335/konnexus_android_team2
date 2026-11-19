@@ -32,13 +32,12 @@ class UserService {
     return null;
   }
 
-  /// [password] là bắt buộc: `UserService.updateUser` của backend gán mật khẩu
-  /// trực tiếp từ payload, nếu bỏ trống sẽ ghi đè mật khẩu hiện tại.
+  /// Cập nhật hồ sơ cơ bản. Mật khẩu được đổi qua [changePassword] để tránh
+  /// vô tình ghi đè khi người dùng chỉ sửa tên/email/avatar.
   Future<void> updateProfile({
     required String userId,
     required String username,
     required String email,
-    required String password,
     String? avatarUrl,
   }) async {
     await _api.put(
@@ -47,7 +46,20 @@ class UserService {
         'username': username.trim(),
         'email': email.trim(),
         'avatar_url': avatarUrl,
-        'password': password,
+      },
+    );
+  }
+
+  /// Đổi mật khẩu: backend yêu cầu đúng mật khẩu hiện tại.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _api.put(
+      '/api/users/password',
+      body: <String, dynamic>{
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
       },
     );
   }

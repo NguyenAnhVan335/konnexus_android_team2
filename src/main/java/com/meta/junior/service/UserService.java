@@ -1,5 +1,7 @@
 package com.meta.junior.service;
+import com.meta.junior.common.ApiResponse;
 import com.meta.junior.common.SystemRole;
+import com.meta.junior.dto.ChangePasswordRequestDTO;
 import com.meta.junior.dto.RegisterRequestDTO;
 import com.meta.junior.dto.UpdateProfileDTO;
 import com.meta.junior.dto.UserDTO;
@@ -24,6 +26,9 @@ public class UserService {
 
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    EmailService emailService;
 
     public List<User> getAll(){
         List<User> list = userRepo.findAll().list();
@@ -78,12 +83,47 @@ public class UserService {
 
         existing_user.setEmail(dto.email);
         existing_user.setUsername(dto.username);
-        existing_user.setPassword(dto.password);
         existing_user.setAvatar_url(dto.avatar_url);
 
         return Response.ok(
                 Map.of("message", "Updating successfully")
         ).build();
+    }
+
+    /**
+     * Đổi mật khẩu: bắt buộc xác thực mật khẩu hiện tại trước khi đặt mật khẩu mới.
+     * Tách riêng khỏi luồng cập nhật hồ sơ để tránh vô tình ghi đè mật khẩu.
+     */
+    @Transactional
+    public Response changePassword(UUID userId, ChangePasswordRequestDTO dto) {
+        User user = userRepo.findById(userId);
+        if (user == null) {
+            return Response.status(404)
+                    .entity(Map.of("message", "User not found"))
+                    .build();
+        }
+
+        String currentPassword = dto.currentPassword == null ? "" : dto.currentPassword;
+        String newPassword = dto.newPassword == null ? "" : dto.newPassword.trim();
+
+        if (!currentPassword.equals(user.getPassword())) {
+            return Response.status(400)
+                    .entity(Map.of("message", "Mật khẩu hiện tại không đúng"))
+                    .build();
+        }
+        if (newPassword.length() < 6) {
+            return Response.status(400)
+                    .entity(Map.of("message", "Mật khẩu mới phải có ít nhất 6 ký tự"))
+                    .build();
+        }
+        if (newPassword.equals(currentPassword)) {
+            return Response.status(400)
+                    .entity(Map.of("message", "Mật khẩu mới phải khác mật khẩu hiện tại"))
+                    .build();
+        }
+
+        user.setPassword(newPassword);
+        return Response.ok(ApiResponse.success("Đổi mật khẩu thành công", null)).build();
     }
     @Transactional
     public Response deleteUser(UUID id){
@@ -134,11 +174,38 @@ public class UserService {
         newUser.set_online(false);
         newUser.setCreated_at(LocalDateTime.now());
         newUser.setRole(SystemRole.USER);
+        // Tài khoản mới chưa xác thực email.
+        newUser.set_active(false);
+        String token = UUID.randomUUID().toString();
+        newUser.setVerification_token(token);
 
         userRepo.persist(newUser);
+
+        // Gửi email xác thực (hiện ghi log link vì chưa cấu hình SMTP).
+        emailService.sendVerificationEmail(newUser.getEmail(), token);
+
         return Response.ok(
-                Map.of("message", "Adding successfully")
+                Map.of("message", "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.")
         ).build();
+    }
+
+    /** Xác thực email theo token đã gửi. */
+    @Transactional
+    public Response verifyEmail(String token) {
+        if (token == null || token.isBlank()) {
+            return Response.status(400)
+                    .entity(Map.of("message", "Thiếu mã xác thực"))
+                    .build();
+        }
+        User user = userRepo.find("verification_token = ?1", token).firstResult();
+        if (user == null) {
+            return Response.status(400)
+                    .entity(Map.of("message", "Mã xác thực không hợp lệ hoặc đã hết hạn"))
+                    .build();
+        }
+        user.set_active(true);
+        user.setVerification_token(null);
+        return Response.ok(ApiResponse.success("Xác thực email thành công. Bạn có thể đăng nhập.", null)).build();
     }
 
 
@@ -149,6 +216,11 @@ public class UserService {
 
     public long countAllUsers() {
         return userRepo.count();
+    }
+
+    /** Số người dùng đang online (`is_online = true`). */
+    public long countOnlineUsers() {
+        return userRepo.count("is_online = true");
     }
 
     @Transactional

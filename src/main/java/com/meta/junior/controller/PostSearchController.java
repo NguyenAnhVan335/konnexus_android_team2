@@ -11,6 +11,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.logging.Logger;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -20,6 +21,8 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 public class PostSearchController {
+
+    private static final Logger LOG = Logger.getLogger(PostSearchController.class);
 
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 30;
@@ -61,8 +64,15 @@ public class PostSearchController {
         }
 
         UUID currentUserId = UUID.fromString(jwt.getSubject());
-        PageResponseDTO<PostResponseDTO> result = postSearchService.searchByKeyword(currentUserId, keyword, page, size);
-        return Response.ok(ApiResponse.success("Tìm kiếm bài viết thành công", result)).build();
+        try {
+            PageResponseDTO<PostResponseDTO> result = postSearchService.searchByKeyword(currentUserId, keyword, page, size);
+            return Response.ok(ApiResponse.success("Tìm kiếm bài viết thành công", result)).build();
+        } catch (RuntimeException e) {
+            LOG.error("Lỗi khi tìm kiếm bài viết với từ khóa: " + keyword, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(ApiResponse.error("Không thể tìm kiếm bài viết. Vui lòng thử lại sau."))
+                    .build();
+        }
     }
 
     /**
@@ -98,8 +108,15 @@ public class PostSearchController {
         }
 
         UUID currentUserId = UUID.fromString(jwt.getSubject());
-        PageResponseDTO<PostResponseDTO> result = postSearchService.searchByHashtag(currentUserId, tagName, page, size);
-        return Response.ok(ApiResponse.success("Lấy danh sách bài viết theo hashtag thành công", result)).build();
+        try {
+            PageResponseDTO<PostResponseDTO> result = postSearchService.searchByHashtag(currentUserId, tagName, page, size);
+            return Response.ok(ApiResponse.success("Lấy danh sách bài viết theo hashtag thành công", result)).build();
+        } catch (RuntimeException e) {
+            LOG.error("Lỗi khi tìm kiếm bài viết theo hashtag: " + tagName, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(ApiResponse.error("Không thể tìm kiếm bài viết. Vui lòng thử lại sau."))
+                    .build();
+        }
     }
 
     private Response validatePagination(int page, int size) {

@@ -3,6 +3,8 @@ import 'dart:async';
 import '../api/api_client.dart';
 import '../storage/preferences_store.dart';
 import '../../navigation/app_navigator.dart';
+import '../../services/admin_service.dart';
+import '../../services/activity_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
 import '../../services/file_upload_service.dart';
@@ -11,6 +13,7 @@ import '../../services/interaction_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/post_service.dart';
 import '../../services/user_service.dart';
+import '../../state/notifications_controller.dart';
 import '../../state/session_controller.dart';
 import '../../state/settings_controller.dart';
 import '../../state/users_directory.dart';
@@ -29,6 +32,9 @@ class AppServices {
     required this.chatService,
     required this.notificationService,
     required this.fileUploadService,
+    required this.adminService,
+    required this.activityService,
+    required this.notifications,
     required this.settings,
     required this.usersDirectory,
     required this.preferencesStore,
@@ -42,10 +48,15 @@ class AppServices {
   final FriendshipService friendshipService;
   final InteractionService interactionService;
 
-  /// Hai service dưới đây đang dùng dữ liệu mẫu vì backend chưa có API.
+  /// Chat & notification gọi REST (backend đã có API); file upload dùng multipart.
   final ChatService chatService;
   final NotificationService notificationService;
   final FileUploadService fileUploadService;
+  final AdminService adminService;
+  final ActivityService activityService;
+
+  /// Controller dùng chung cho màn Thông báo và badge trên chuông app bar.
+  final NotificationsController notifications;
 
   final SettingsController settings;
   final UsersDirectory usersDirectory;
@@ -59,11 +70,17 @@ class AppServices {
     final UserService userService = UserService(api);
     final UsersDirectory usersDirectory = UsersDirectory(userService);
     final SettingsController settings = SettingsController(store)..load();
+    final NotificationService notificationService = ApiNotificationService(api);
+    final NotificationsController notifications =
+        NotificationsController(notificationService);
 
     session.attach(
       authService: authService,
       userService: userService,
-      onSessionCleared: usersDirectory.clear,
+      onSessionCleared: () {
+        usersDirectory.clear();
+        notifications.clear();
+      },
     );
 
     // Xử lý 401 tập trung: token hết hạn ở bất kỳ endpoint nào cũng đưa người
@@ -84,8 +101,11 @@ class AppServices {
       friendshipService: FriendshipService(api),
       interactionService: InteractionService(api),
       chatService: ApiChatService(api, session),
-      notificationService: ApiNotificationService(api),
-      fileUploadService: FileUploadService(session),
+      notificationService: notificationService,
+      fileUploadService: FileUploadService(api),
+      adminService: AdminService(api),
+      activityService: ActivityService(api),
+      notifications: notifications,
       settings: settings,
       usersDirectory: usersDirectory,
       preferencesStore: store,
@@ -95,6 +115,7 @@ class AppServices {
   void dispose() {
     apiClient.dispose();
     usersDirectory.dispose();
+    notifications.dispose();
     settings.dispose();
     session.dispose();
   }

@@ -15,7 +15,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @ApplicationScoped
@@ -86,5 +88,29 @@ public class MessageService {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.atTime(LocalTime.MAX);
         return messageRepo.count("created_at BETWEEN ?1 AND ?2", start, end);
+    }
+
+    /** Tổng số tin nhắn đã gửi (mọi thời điểm). */
+    public long countAllMessages() {
+        return messageRepo.count();
+    }
+
+    /**
+     * Đếm số tin nhắn theo từng ngày trong {@code days} ngày gần nhất (bao gồm hôm nay).
+     * Dữ liệu thật từ bảng messages, KHÔNG dùng số giả lập cho biểu đồ dashboard.
+     */
+    public Map<LocalDate, Long> countMessagesByDay(int days) {
+        LocalDate firstDay = LocalDate.now().minusDays(days - 1L);
+        List<LocalDateTime> createdAtList = messageRepo.getEntityManager()
+                .createQuery(
+                        "select m.created_at from Message m where m.created_at >= :since",
+                        LocalDateTime.class)
+                .setParameter("since", firstDay.atStartOfDay())
+                .getResultList();
+
+        return createdAtList.stream()
+                .collect(Collectors.groupingBy(
+                        LocalDateTime::toLocalDate,
+                        Collectors.counting()));
     }
 }

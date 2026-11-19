@@ -1,5 +1,6 @@
 package com.meta.junior.service;
 
+import com.meta.junior.common.ActivityType;
 import com.meta.junior.common.FriendRequestStatus;
 import com.meta.junior.common.NortificationType;
 import com.meta.junior.dto.social_media.friendship.FriendshipRequestDTO;
@@ -30,6 +31,9 @@ public class FriendshipService {
 
     @Inject
     NotificationService notificationService;
+
+    @Inject
+    ActivityLogService activityLogService;
 
     /**
      * UC: Gửi lời mời kết bạn
@@ -106,6 +110,7 @@ public class FriendshipService {
         // 7. Lưu database
         friendshipRepo.persistAndFlush(friendship);
         notificationService.notify(senderId, receiverId, NortificationType.FRIEND_REQUEST, null, null);
+        activityLogService.log(senderId, ActivityType.FRIEND_REQUEST, receiverId, receiver.getUsername());
         return FriendshipResponseDTO.from(friendship);
     }
 

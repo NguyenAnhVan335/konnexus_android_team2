@@ -3,6 +3,7 @@ import 'dart:async';
 import 'app_change_notifier.dart';
 
 import '../core/api/api_exception.dart';
+import '../core/auth/jwt_utils.dart';
 import '../core/storage/preferences_store.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -55,6 +56,12 @@ class SessionController extends AppChangeNotifier {
   String get displayName => _user?.displayName ?? 'Người dùng';
 
   String get avatarUrl => _user?.avatarUrl ?? '';
+
+  /// Token JWT hiện tại (dùng cho query `?token=` của WebSocket chat).
+  String? get token => _token;
+
+  /// `true` nếu tài khoản đang đăng nhập là ADMIN (đọc claim `admin` trong JWT).
+  bool get isAdmin => isAdminJwt(_token);
 
   Map<String, String> get authHeaders {
     final Map<String, String> headers = <String, String>{};
@@ -173,10 +180,10 @@ class SessionController extends AppChangeNotifier {
   }
 
   /// Cập nhật hồ sơ: phần lõi gọi backend, giới tính/địa chỉ lưu cục bộ.
+  /// Mật khẩu KHÔNG còn nằm trong luồng này (xem [changePassword]).
   Future<void> updateProfile({
     required String username,
     required String email,
-    required String password,
     String? avatarUrl,
     String? gender,
     DateTime? birthday,
@@ -192,7 +199,6 @@ class SessionController extends AppChangeNotifier {
         userId: _userId!,
         username: username,
         email: email,
-        password: password,
         avatarUrl: avatarUrl,
       );
       await _store.saveAddress(address);
@@ -214,6 +220,29 @@ class SessionController extends AppChangeNotifier {
       _user = updated;
       await _store.saveUser(updated);
       notifyListeners();
+    } on ApiException catch (error) {
+      _error = error.userMessage;
+      rethrow;
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  /// Đổi mật khẩu: bắt buộc xác thực đúng mật khẩu hiện tại.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_userId == null) {
+      throw const ApiException('Bạn cần đăng nhập để đổi mật khẩu.');
+    }
+    _setBusy(true);
+    _error = null;
+    try {
+      await _userService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
     } on ApiException catch (error) {
       _error = error.userMessage;
       rethrow;

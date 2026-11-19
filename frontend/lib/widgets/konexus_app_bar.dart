@@ -5,13 +5,13 @@ import '../navigation/app_routes.dart';
 import '../theme/app_colors.dart';
 import 'avatar_view.dart';
 
-/// Thanh tiêu đề chính: avatar bên trái, "Konexus" ở giữa, các nút tác vụ bên phải.
+/// Thanh tiêu đề chính: avatar bên trái, "Konnexus" ở giữa, các nút tác vụ bên phải.
 ///
-/// Bám theo wireframe: Avatar | ... Konexus ... | [Tạo bài viết] [Tìm kiếm] [Thông báo]
+/// Bám theo wireframe: Avatar | ... Konnexus ... | [Tạo bài viết] [Tìm kiếm] [Thông báo]
 class KonexusAppBar extends StatelessWidget implements PreferredSizeWidget {
   const KonexusAppBar({
     super.key,
-    this.title = 'Konexus',
+    this.title = 'Konnexus',
     this.showAvatar = true,
     this.showCreatePost = false,
     this.showSearch = true,
@@ -37,10 +37,13 @@ class KonexusAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = AppScope.of(context).session;
+    final services = AppScope.of(context);
+    final session = services.session;
+    final notifications = services.notifications;
     return ListenableBuilder(
-      listenable: session,
+      listenable: Listenable.merge(<Listenable>[session, notifications]),
       builder: (BuildContext context, Widget? _) {
+        final int unread = notifications.unreadCount;
         return AppBar(
           centerTitle: true,
           titleSpacing: 0,
@@ -77,8 +80,15 @@ class KonexusAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             if (showNotifications)
               IconButton(
-                tooltip: 'Thông báo',
-                icon: const Icon(Icons.notifications_none_outlined),
+                tooltip: unread > 0
+                    ? 'Thông báo ($unread chưa đọc)'
+                    : 'Thông báo',
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  backgroundColor: AppColors.danger,
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  child: const Icon(Icons.notifications_none_outlined),
+                ),
                 onPressed: onNotifications ??
                     () => Navigator.of(context)
                         .pushNamed(AppRoutes.notifications),

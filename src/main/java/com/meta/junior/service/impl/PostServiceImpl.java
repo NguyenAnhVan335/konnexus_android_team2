@@ -1,5 +1,6 @@
 package com.meta.junior.service.impl;
 
+import com.meta.junior.common.ActivityType;
 import com.meta.junior.common.PostMediaType;
 import com.meta.junior.common.PostPrivacy;
 import com.meta.junior.common.ReactionType;
@@ -16,6 +17,7 @@ import com.meta.junior.repository.FriendshipRepo;
 import com.meta.junior.repository.PostReactionRepo;
 import com.meta.junior.repository.PostRepo;
 import com.meta.junior.repository.UserRepo;
+import com.meta.junior.service.ActivityLogService;
 import com.meta.junior.service.HashtagService;
 import com.meta.junior.service.PostService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -48,6 +50,9 @@ public class PostServiceImpl implements PostService {
     @Inject
     HashtagService hashtagService;
 
+    @Inject
+    ActivityLogService activityLogService;
+
     @Override
     @Transactional
     public PostResponseDTO createPost(UUID currentUserId, CreatePostRequestDTO dto) {
@@ -78,6 +83,7 @@ public class PostServiceImpl implements PostService {
         }
 
         postRepo.persist(post);
+        activityLogService.log(currentUserId, ActivityType.POST, post.getId(), post.getContent());
 
         // Tự động trích xuất và đồng bộ hashtags
         hashtagService.syncPostHashtags(post, post.getContent());
@@ -113,6 +119,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PageResponseDTO<PostResponseDTO> getNewsfeed(UUID currentUserId, int page, int size) {
         int pageIndex = Math.max(0, page);
         int pageSize = Math.min(Math.max(1, size), 50);
@@ -139,6 +146,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PageResponseDTO<PostResponseDTO> getUserTimeline(UUID currentUserId, UUID targetUserId, int page, int size) {
         // Kiểm tra người dùng có tồn tại không
         if (userRepo.findByIdOptional(targetUserId).isEmpty()) {
@@ -170,6 +178,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PageResponseDTO<PostResponseDTO> getTrendingPosts(UUID currentUserId, int page, int size, int days) {
         int pageIndex = Math.max(0, page);
         int pageSize = Math.min(Math.max(1, size), 50);

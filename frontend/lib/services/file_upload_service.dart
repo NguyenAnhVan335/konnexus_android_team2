@@ -1,28 +1,26 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../config/api_config.dart';
-import '../state/session_controller.dart';
+import '../core/api/api_client.dart';
+import '../core/api/api_exception.dart';
+import '../utils/json_utils.dart';
 
 /// Upload file (ảnh/video) lên backend qua `POST /api/upload` (multipart).
 class FileUploadService {
-  FileUploadService(this._session);
+  FileUploadService(this._api);
 
-  final SessionController _session;
+  final ApiClient _api;
 
+  /// Trả về URL công khai của tệp vừa tải lên.
   Future<String> uploadFile(String filePath) async {
-    final Uri uri = Uri.parse('${ApiConfig.normalizedBaseUrl}/api/upload');
-    final http.MultipartRequest request = http.MultipartRequest('POST', uri);
-    request.headers.addAll(_session.authHeaders);
-    request.files.add(await http.MultipartFile.fromPath('file', filePath));
-    final http.StreamedResponse streamed = await request.send();
-    final http.Response response = await http.Response.fromStream(streamed);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Upload thất bại (HTTP ${response.statusCode})');
+    final dynamic response = await _api.postMultipart(
+      '/api/upload',
+      fileField: 'file',
+      filePath: filePath,
+    );
+    final Map<String, dynamic> json = asMap(ApiClient.unwrap(response));
+    final String url = (asString(json['url']) ?? '').trim();
+    if (url.isEmpty) {
+      throw const ApiException('Máy chủ không trả về đường dẫn tệp đã tải lên.');
     }
-    final Map<String, dynamic> json =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-    return (json['url'] ?? '').toString();
+    return url;
   }
 }
+

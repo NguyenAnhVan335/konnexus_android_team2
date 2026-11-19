@@ -43,7 +43,8 @@ class NotificationItem {
       body: _bodyFor(type),
       createdAt: parseApiDate(json['created_at']) ?? DateTime.now(),
       kind: _kindFor(type),
-      isRead: asBool(json['is_read'], fallback: asBool(json['read'])),
+      isRead: asBool(json['is_read'],
+          fallback: asBool(json['_read'], fallback: asBool(json['read']))),
       postId: asString(json['post_id']),
     );
   }

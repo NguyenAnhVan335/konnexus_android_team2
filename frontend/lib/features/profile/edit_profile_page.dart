@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/di/app_scope.dart';
 import '../../models/user_model.dart';
+import '../../navigation/app_routes.dart';
 import '../../state/session_controller.dart';
 import '../../utils/formatters.dart';
 import '../../utils/validators.dart';
@@ -12,6 +13,7 @@ import '../../widgets/app_text_field.dart';
 import '../../widgets/avatar_view.dart';
 import '../../widgets/feedback.dart';
 import '../../widgets/konexus_app_bar.dart';
+import '../../widgets/surface_card.dart';
 
 /// Chỉnh sửa hồ sơ: phần lõi (tên, email, mật khẩu, avatar) gửi `PUT /api/users/{id}`;
 /// giới tính, sinh nhật, địa chỉ chỉ lưu cục bộ vì backend chưa có các cột này.
@@ -32,15 +34,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _birthdayController = TextEditingController();
 
   late final SessionController _session;
   bool _initialized = false;
   bool _isSaving = false;
-  bool _obscure = true;
   String? _avatarUrl;
   DateTime? _birthday;
   String _gender = 'unspecified';
@@ -67,8 +66,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _usernameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
-    _confirmController.dispose();
     _addressController.dispose();
     _birthdayController.dispose();
     super.dispose();
@@ -109,9 +106,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
       setState(() => _avatarUrl = url);
       showAppSnackBar(context, 'Đã cập nhật ảnh đại diện');
-    } catch (_) {
+    } on ApiException catch (error) {
       if (mounted) {
-        showAppSnackBar(context, 'Tải ảnh lên thất bại', isError: true);
+        showAppSnackBar(context, error.userMessage, isError: true);
       }
     }
   }
@@ -125,7 +122,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _session.updateProfile(
         username: _usernameController.text,
         email: _emailController.text,
-        password: _passwordController.text,
         avatarUrl: _avatarUrl,
         gender: _gender,
         birthday: _birthday,
@@ -213,36 +209,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               textInputAction: TextInputAction.next,
               validator: Validators.email,
             ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _passwordController,
-              label: 'Mật khẩu',
-              hint: 'Mật khẩu hiện tại',
-              prefixIcon: Icons.lock_outline,
-              obscureText: _obscure,
-              textInputAction: TextInputAction.next,
-              validator: Validators.password,
-              suffix: IconButton(
-                icon: Icon(
-                  _obscure
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
-                  size: 20,
-                ),
-                onPressed: () => setState(() => _obscure = !_obscure),
-              ),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _confirmController,
-              label: 'Nhập lại mật khẩu',
-              hint: 'Nhập lại mật khẩu',
-              prefixIcon: Icons.lock_reset_outlined,
-              obscureText: _obscure,
-              textInputAction: TextInputAction.next,
-              validator: (String? value) =>
-                  Validators.confirmPassword(value, _passwordController.text),
-            ),
             const SizedBox(height: 16),
             const Text('Giới tính',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
@@ -275,6 +241,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
               hint: 'Ví dụ: Quận 1, TP. Hồ Chí Minh',
               prefixIcon: Icons.place_outlined,
               textInputAction: TextInputAction.done,
+            ),
+            const SizedBox(height: 18),
+            const Text('Bảo mật',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            SurfaceCard(
+              padding: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.lock_reset_outlined),
+                title: const Text('Đổi mật khẩu'),
+                subtitle: const Text('Cần nhập đúng mật khẩu hiện tại'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.changePassword),
+              ),
             ),
             const SizedBox(height: 22),
             AppButton(

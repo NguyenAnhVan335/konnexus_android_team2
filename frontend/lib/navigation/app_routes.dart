@@ -8,8 +8,12 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
+  static const String changePassword = '/profile/change-password';
+  static const String activityHistory = '/profile/activity';
   static const String settings = '/settings';
   static const String postDetail = '/post/detail';
   static const String postComposer = '/post/composer';
   static const String chat = '/messages/chat';
+  static const String createGroup = '/messages/group/create';
+  static const String admin = '/admin';
 }

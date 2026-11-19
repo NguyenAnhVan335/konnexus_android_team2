@@ -47,15 +47,11 @@ class _RegisterPageState extends State<RegisterPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      await session.login(
-        username: _usernameController.text,
-        password: _passwordController.text,
-      );
       if (!mounted) {
         return;
       }
       showAppSnackBar(
-          context, 'Đăng ký thành công, chào mừng bạn đến Konexus!');
+          context, 'Đăng ký thành công! Kiểm tra email để xác thực tài khoản.');
       Navigator.of(context).pop();
     } on ApiException catch (error) {
       if (!mounted) {
@@ -85,7 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 const Text(
-                  'Tạo tài khoản Konexus',
+                  'Tạo tài khoản Konnexus',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
@@ -147,13 +143,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 22),
                 AppButton(
-                  label: 'Đăng ký và đăng nhập',
+                  label: 'Đăng ký',
                   isLoading: _isSubmitting,
                   onPressed: _submit,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Sau khi đăng ký, ứng dụng tự đăng nhập bằng tài khoản vừa tạo.',
+                  'Sau khi đăng ký, hãy kiểm tra email và mở link xác thực trước khi đăng nhập.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,

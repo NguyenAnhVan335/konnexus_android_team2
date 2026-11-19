@@ -12,8 +12,8 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 @Path("/api/upload")
 @Authenticated
@@ -25,18 +25,40 @@ public class FileUploadController {
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadFile(@RestForm("file")FileUpload fileUpload){
+    public Response uploadFile(@RestForm("file") FileUpload fileUpload) {
+        // Multipart có thể gửi thiếu part "file" hoặc part rỗng.
+        if (fileUpload == null || fileUpload.filePath() == null || fileUpload.size() == 0) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Vui lòng chọn tệp tin cần tải lên."))
+                    .build();
+        }
+
         try {
             //get the temporary file when getting request
-            File file = fileUpload.filePath().toFile();
+            String fileUrl = cloudinaryService.uploadFile(fileUpload.filePath().toFile());
 
-            //Push to Cloudinary and get the link
-            String file_url = cloudinaryService.uploadFile(file);
+            if (fileUrl == null || fileUrl.isBlank()) {
+                return Response.status(Response.Status.BAD_GATEWAY)
+                        .entity(Map.of("message", "Cloudinary không trả về đường dẫn tệp."))
+                        .build();
+            }
 
-            return Response.ok("{\"url\":\"" + file_url + "\"}").build();
-        }catch (IOException e){
+            // Trả object JSON thật (Map) — không tự nối chuỗi JSON, vì Jackson sẽ
+            // bọc chuỗi đó thành một JSON string khiến client không đọc được `url`.
+            return Response.ok(Map.of("url", fileUrl)).build();
+        } catch (IOException e) {
             e.printStackTrace();
-            return Response.serverError().entity("{\"error\":\"Upload file thất bại\"}").build();
+            return Response.status(Response.Status.BAD_GATEWAY)
+                    .entity(Map.of(
+                            "message",
+                            "Không thể tải tệp lên Cloudinary. Kiểm tra cấu hình CLOUDINARY_URL."
+                    ))
+                    .build();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("message", "Tải tệp lên thất bại. Vui lòng thử lại."))
+                    .build();
         }
     }
 

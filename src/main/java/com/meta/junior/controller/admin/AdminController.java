@@ -3,6 +3,7 @@ package com.meta.junior.controller.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.meta.junior.repository.PostRepo;
 import com.meta.junior.service.ConversationService;
 import com.meta.junior.service.MessageService;
 import com.meta.junior.service.UserService;
@@ -33,6 +34,9 @@ public class AdminController {
     ConversationService conversationService;
 
     @Inject
+    PostRepo postRepo;
+
+    @Inject
     ObjectMapper objectMapper;
 
     // Biến tạm lưu trạng thái Bot (Trong thực tế nên lưu vào Database bảng `SystemConfig`)
@@ -49,26 +53,31 @@ public class AdminController {
         ObjectNode response = objectMapper.createObjectNode();
 
         response.put("totalUsers", userService.countAllUsers());
-        response.put("totalRooms", conversationService.countAllConversations());
+        response.put("onlineUsers", userService.countOnlineUsers());
+        response.put("totalPosts", postRepo.count("isDeleted = false"));
+        response.put("totalMessages", messageService.countAllMessages());
         response.put("totalMessagesToday", messageService.countMessagesToday());
+        response.put("totalRooms", conversationService.countAllConversations());
 
         response.put("isBotEnabled", isCharlesEnabled);
         response.put("botTokensUsed", charlesTokensUsed);
 
-        // 2. Tạo dữ liệu giả lập cho biểu đồ 7 ngày (Bạn có thể Query DB group by Date thật sau)
+        // Backend chưa lưu phiên làm việc nên KHÔNG bịa "số giờ sử dụng": trả null
+        // để frontend hiển thị "Chưa có dữ liệu".
+        response.putNull("totalUsageHours");
+
+        // Biểu đồ 7 ngày dùng dữ liệu thật (đếm tin nhắn theo ngày), thay cho số giả lập.
         ArrayNode chartData = objectMapper.createArrayNode();
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
-        
-        // Tạo data lùi về 7 ngày trước
-        int[] dummyMessages = {120, 250, 180, 400, 310, 560, (int) messageService.countMessagesToday()};
+        Map<LocalDate, Long> messagesByDay = messageService.countMessagesByDay(7);
         for (int i = 6; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
             ObjectNode dayNode = objectMapper.createObjectNode();
-            dayNode.put("date", today.minusDays(i).format(formatter));
-            dayNode.put("messages", dummyMessages[6 - i]);
+            dayNode.put("date", day.format(formatter));
+            dayNode.put("messages", messagesByDay.getOrDefault(day, 0L));
             chartData.add(dayNode);
         }
-        
         response.set("chartData", chartData);
 
         return Response.ok(response).build();

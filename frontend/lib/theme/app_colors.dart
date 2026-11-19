@@ -40,7 +40,7 @@ class AppColors {
   ];
 
   static const List<String> accentNames = <String>[
-    'Xanh Konexus',
+    'Xanh Konnexus',
     'Xanh biển',
     'Xanh lá',
     'Tím',

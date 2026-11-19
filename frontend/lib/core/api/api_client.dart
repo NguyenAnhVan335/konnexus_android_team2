@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -64,6 +63,44 @@ class ApiClient {
     return _send('DELETE', path, body: body, authenticated: authenticated);
   }
 
+  /// Gửi request multipart/form-data (dùng cho upload tệp).
+  ///
+  /// Cùng quy ước header, timeout và chuẩn hoá lỗi như [get]/[post], nhưng nội
+  /// dung là file nhị phân nên không đi qua `_send`.
+  Future<dynamic> postMultipart(
+    String path, {
+    required String fileField,
+    required String filePath,
+    Map<String, String>? fields,
+    bool authenticated = true,
+  }) async {
+    final Uri uri = _buildUri(path, null);
+    try {
+      final http.MultipartRequest request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(<String, String>{
+        'Accept': 'application/json',
+        ..._headersProvider(),
+      });
+      if (fields != null && fields.isNotEmpty) {
+        request.fields.addAll(fields);
+      }
+      request.files.add(await http.MultipartFile.fromPath(fileField, filePath));
+      final http.StreamedResponse streamed =
+          await _http.send(request).timeout(ApiConfig.uploadTimeout);
+      final http.Response response = await http.Response.fromStream(streamed);
+      return _decode(response, authenticated: authenticated);
+    } on TimeoutException {
+      throw const ApiException('Tải tệp lên quá lâu. Kiểm tra kết nối và thử lại.');
+    } on http.ClientException {
+      throw const ApiException('Không kết nối được máy chủ.');
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      // `FileSystemException` (không đọc được file), `UnsupportedError` (web)...
+      throw const ApiException('Không đọc được tệp đã chọn.');
+    }
+  }
+
   Future<dynamic> _send(
     String method,
     String path, {
@@ -90,8 +127,6 @@ class ApiClient {
       return _decode(response, authenticated: authenticated);
     } on TimeoutException {
       throw const ApiException('Máy chủ phản hồi quá lâu. Vui lòng thử lại.');
-    } on SocketException {
-      throw const ApiException('Không kết nối được máy chủ.');
     } on http.ClientException {
       throw const ApiException('Không kết nối được máy chủ.');
     }

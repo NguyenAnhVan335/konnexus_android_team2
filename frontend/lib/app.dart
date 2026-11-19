@@ -9,6 +9,7 @@ import 'navigation/app_router.dart';
 import 'state/session_controller.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
+import 'widgets/app_logo.dart';
 
 class KonnexusApp extends StatelessWidget {
   const KonnexusApp({super.key, required this.services});
@@ -26,7 +27,7 @@ class KonnexusApp extends StatelessWidget {
         ]),
         builder: (BuildContext context, Widget? _) {
           return MaterialApp(
-            title: 'Konexus',
+            title: 'Konnexus',
             debugShowCheckedModeBanner: false,
             navigatorKey: AppNavigator.key,
             theme: AppTheme.light(services.settings.accent),
@@ -75,26 +76,10 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                'K',
-                style: TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
+            const AppLogo(size: 96),
             const SizedBox(height: 20),
             Text(
-              'Konexus',
+              'Konnexus',
               style: AppTextStyles.brand.copyWith(color: AppColors.white),
             ),
             const SizedBox(height: 6),

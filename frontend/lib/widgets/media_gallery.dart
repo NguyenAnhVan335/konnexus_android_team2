@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/post_model.dart';
 import '../theme/app_colors.dart';
 
-/// Hiển thị tối đa 4 media của bài viết (backend nhận `media_url`, chưa có upload).
+/// Hiển thị tối đa 4 media của bài viết.
 class MediaGallery extends StatelessWidget {
   const MediaGallery({super.key, required this.items});
 

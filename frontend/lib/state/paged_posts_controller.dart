@@ -154,8 +154,32 @@ class TrendingController extends PagedPostsController {
   int days;
 
   @override
-  Future<PageData<PostModel>> fetchPage(int page, int size) {
-    return postService.fetchTrending(page: page, size: size, days: days);
+  Future<PageData<PostModel>> fetchPage(int page, int size) async {
+    final PageData<PostModel> data =
+        await postService.fetchTrending(page: page, size: size, days: days);
+    // Chuẩn hoá thứ tự hiển thị: tương tác nhiều trước, cùng điểm thì mới nhất
+    // trước — không phụ thuộc thứ tự trả về của backend.
+    final List<PostModel> sorted = List<PostModel>.from(data.content)
+      ..sort((PostModel a, PostModel b) {
+        final int scoreA = a.likeCount + a.commentCount;
+        final int scoreB = b.likeCount + b.commentCount;
+        if (scoreA != scoreB) {
+          return scoreB.compareTo(scoreA);
+        }
+        final DateTime? left = a.createdAt;
+        final DateTime? right = b.createdAt;
+        if (left == null || right == null) {
+          return 0;
+        }
+        return right.compareTo(left);
+      });
+    return PageData<PostModel>(
+      content: sorted,
+      page: data.page,
+      size: data.size,
+      totalElements: data.totalElements,
+      totalPages: data.totalPages,
+    );
   }
 
   Future<void> changeDays(int value) async {

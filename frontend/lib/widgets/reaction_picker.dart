@@ -67,22 +67,29 @@ Future<String?> showReactionPicker(BuildContext context,
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                for (final ReactionOption option in kReactionOptions)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: () => Navigator.of(context).pop(option.type),
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                      child: Text(option.emoji,
-                          style: const TextStyle(fontSize: 30)),
-                    ),
-                  ),
-              ],
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width - 32,
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    for (final ReactionOption option in kReactionOptions)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () => Navigator.of(context).pop(option.type),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 4),
+                          child: Text(option.emoji,
+                              style: const TextStyle(fontSize: 30)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/chat_model.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/linkified_text.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message});
@@ -41,9 +42,17 @@ class MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(
+            LinkifiedText(
               message.text,
               style: TextStyle(fontSize: 13.5, height: 1.35, color: foreground),
+              linkStyle: TextStyle(
+                fontSize: 13.5,
+                height: 1.35,
+                color: foreground,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+                decorationColor: foreground,
+              ),
             ),
             const SizedBox(height: 3),
             Text(

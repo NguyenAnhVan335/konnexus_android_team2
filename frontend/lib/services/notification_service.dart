@@ -8,6 +8,9 @@ abstract class NotificationService {
   Future<List<NotificationItem>> fetchNotifications();
 
   Future<void> markAllAsRead();
+
+  /// Đánh dấu một thông báo đã đọc.
+  Future<void> markAsRead(String notificationId);
 }
 
 /// Implementation thật gọi `/api/v1/notifications` của backend.
@@ -33,11 +36,16 @@ class ApiNotificationService implements NotificationService {
       if (item.isRead) {
         continue;
       }
-      await _api.put(
-        '/api/v1/notifications',
-        body: <String, dynamic>{'notificationId': item.id, 'isRead': true},
-      );
+      await markAsRead(item.id);
     }
+  }
+
+  @override
+  Future<void> markAsRead(String notificationId) async {
+    await _api.put(
+      '/api/v1/notifications',
+      body: <String, dynamic>{'notificationId': notificationId, 'isRead': true},
+    );
   }
 }
 
@@ -58,6 +66,15 @@ class MockNotificationService implements NotificationService {
   Future<void> markAllAsRead() async {
     for (int index = 0; index < _items.length; index++) {
       _items[index] = _items[index].copyWith(isRead: true);
+    }
+  }
+
+  @override
+  Future<void> markAsRead(String notificationId) async {
+    for (int index = 0; index < _items.length; index++) {
+      if (_items[index].id == notificationId) {
+        _items[index] = _items[index].copyWith(isRead: true);
+      }
     }
   }
 }

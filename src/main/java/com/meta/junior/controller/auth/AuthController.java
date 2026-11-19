@@ -6,8 +6,10 @@ import com.meta.junior.service.UserService;
 import com.meta.junior.service.auth.JwtService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/auth")
@@ -30,6 +32,14 @@ public class AuthController {
     @PermitAll
     public Response sign_up(RegisterRequestDTO dto){
         return user_service.registerUser(dto);
+    }
+
+    /** Xác thực email qua link chứa token (mở từ email). */
+    @GET
+    @Path("/verify")
+    @PermitAll
+    public Response verify(@QueryParam("token") String token){
+        return user_service.verifyEmail(token);
     }
 
 }

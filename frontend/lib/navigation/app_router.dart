@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../features/auth/login_page.dart';
 import '../features/auth/register_page.dart';
+import '../features/admin/admin_shell.dart';
 import '../features/messages/chat_page.dart';
+import '../features/messages/create_group_page.dart';
 import '../features/notifications/notifications_page.dart';
 import '../features/post/post_composer_page.dart';
 import '../features/post/post_detail_page.dart';
+import '../features/profile/activity_history_page.dart';
+import '../features/profile/change_password_page.dart';
 import '../features/profile/edit_profile_page.dart';
 import '../features/profile/profile_page.dart';
 import '../features/profile/settings_page.dart';
@@ -30,6 +34,10 @@ class AppRouter {
         return _page(const NotificationsPage(), settings);
       case AppRoutes.editProfile:
         return _page(const EditProfilePage(), settings);
+      case AppRoutes.changePassword:
+        return _page(const ChangePasswordPage(), settings);
+      case AppRoutes.activityHistory:
+        return _page(const ActivityHistoryPage(), settings);
       case AppRoutes.settings:
         return _page(const SettingsPage(), settings);
       case AppRoutes.postComposer:
@@ -57,6 +65,10 @@ class AppRouter {
               message: 'Không mở được trò chuyện: thiếu dữ liệu.'),
           settings,
         );
+      case AppRoutes.createGroup:
+        return _page(const CreateGroupPage(), settings);
+      case AppRoutes.admin:
+        return _page(const AdminShell(), settings);
       case AppRoutes.profile:
         return _page(
           ProfilePage(userId: args is ProfileArgs ? args.userId : null),
@@ -88,7 +100,7 @@ class _RouteErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Konexus')),
+      appBar: AppBar(title: const Text('Konnexus')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

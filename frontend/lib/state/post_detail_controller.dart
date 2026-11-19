@@ -35,6 +35,9 @@ class PostDetailController extends AppChangeNotifier {
 
   List<CommentModel> get comments => _comments;
 
+  /// Cây bình luận dựng từ `parentId` (gốc + trả lời lồng nhau).
+  List<CommentNode> get commentTree => buildCommentTree(_comments);
+
   bool get isLoading => _isLoading;
 
   bool get isSubmitting => _isSubmitting;

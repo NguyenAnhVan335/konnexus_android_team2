@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
 
     /**
-     * Tìm bài viết còn hoạt động (chưa xóa mềm) theo ID.
+     * TÃ¬m bÃ i viáº¿t cÃ²n hoáº¡t Ä‘á»™ng (chÆ°a xÃ³a má»m) theo ID.
      */
     public Optional<Post> findActiveById(UUID id) {
         return find(
@@ -27,9 +27,9 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
     }
 
     /**
-     * Lấy bài viết chi tiết kèm author và mediaList.
+     * Láº¥y bÃ i viáº¿t chi tiáº¿t kÃ¨m author vÃ  mediaList.
      *
-     * Dùng fetch join để tránh lazy loading khi lấy detail.
+     * DÃ¹ng fetch join Ä‘á»ƒ trÃ¡nh lazy loading khi láº¥y detail.
      */
     public Optional<Post> findActiveByIdWithDetails(UUID id) {
         return find("""
@@ -44,12 +44,12 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
     }
 
     /**
-     * Lấy bảng tin (Newsfeed) có phân trang.
+     * Láº¥y báº£ng tin (Newsfeed) cÃ³ phÃ¢n trang.
      *
-     * Quy tắc privacy:
-     * - PUBLIC: mọi người đều xem được.
-     * - PRIVATE: chỉ chính tác giả xem được.
-     * - FRIENDS_ONLY: tác giả và bạn bè đã ACCEPTED xem được.
+     * Quy táº¯c privacy:
+     * - PUBLIC: má»i ngÆ°á»i Ä‘á»u xem Ä‘Æ°á»£c.
+     * - PRIVATE: chá»‰ chÃ­nh tÃ¡c giáº£ xem Ä‘Æ°á»£c.
+     * - FRIENDS_ONLY: tÃ¡c giáº£ vÃ  báº¡n bÃ¨ Ä‘Ã£ ACCEPTED xem Ä‘Æ°á»£c.
      */
     public PanacheQuery<Post> findFeed(
             UUID currentUserId,
@@ -88,15 +88,15 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
     }
 
     /**
-     * Lấy bài viết trên dòng thời gian cá nhân có phân trang.
+     * Láº¥y bÃ i viáº¿t trÃªn dÃ²ng thá»i gian cÃ¡ nhÃ¢n cÃ³ phÃ¢n trang.
      *
-     * Quy tắc privacy:
-     * - Nếu currentUserId == targetUserId:
-     * thấy tất cả bài chưa xóa của chính mình.
-     * - Nếu là người khác:
-     * PUBLIC -> xem được.
-     * FRIENDS_ONLY -> chỉ xem nếu là bạn ACCEPTED.
-     * PRIVATE -> không xem được.
+     * Quy táº¯c privacy:
+     * - Náº¿u currentUserId == targetUserId:
+     * tháº¥y táº¥t cáº£ bÃ i chÆ°a xÃ³a cá»§a chÃ­nh mÃ¬nh.
+     * - Náº¿u lÃ  ngÆ°á»i khÃ¡c:
+     * PUBLIC -> xem Ä‘Æ°á»£c.
+     * FRIENDS_ONLY -> chá»‰ xem náº¿u lÃ  báº¡n ACCEPTED.
+     * PRIVATE -> khÃ´ng xem Ä‘Æ°á»£c.
      */
     public PanacheQuery<Post> findUserTimeline(
             UUID currentUserId,
@@ -138,12 +138,12 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
     }
 
     /**
-     * Tìm kiếm bài viết theo từ khóa có kiểm tra quyền riêng tư.
+     * TÃ¬m kiáº¿m bÃ i viáº¿t theo tá»« khÃ³a cÃ³ kiá»ƒm tra quyá»n riÃªng tÆ°.
      *
-     * Quy tắc privacy:
-     * - PUBLIC: mọi người đều xem được.
-     * - PRIVATE: chỉ tác giả xem được.
-     * - FRIENDS_ONLY: bạn bè ACCEPTED xem được.
+     * Quy táº¯c privacy:
+     * - PUBLIC: má»i ngÆ°á»i Ä‘á»u xem Ä‘Æ°á»£c.
+     * - PRIVATE: chá»‰ tÃ¡c giáº£ xem Ä‘Æ°á»£c.
+     * - FRIENDS_ONLY: báº¡n bÃ¨ ACCEPTED xem Ä‘Æ°á»£c.
      */
     public PanacheQuery<Post> searchByKeyword(
             UUID currentUserId,
@@ -164,7 +164,7 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
                 from Post p
                 left join fetch p.author
                 where p.isDeleted = false
-                  and lower(p.content) like lower(:keyword) escape '\\\\'
+                  and lower(p.content) like lower(:keyword) escape '\'
                   and (
                       p.privacy = :publicPrivacy
                       or p.author.id = :currentUserId
@@ -199,9 +199,9 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
     }
 
     /**
-     * Tìm kiếm bài viết theo hashtag có kiểm tra quyền riêng tư.
+     * TÃ¬m kiáº¿m bÃ i viáº¿t theo hashtag cÃ³ kiá»ƒm tra quyá»n riÃªng tÆ°.
      *
-     * Hỗ trợ:
+     * Há»— trá»£:
      * - dalat
      * - #dalat
      */
@@ -223,7 +223,7 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
                 .trim()
                 .toLowerCase(Locale.ROOT);
 
-        // Ví dụ input chỉ là "#"
+        // VÃ­ dá»¥ input chá»‰ lÃ  "#"
         if (cleanTagName.isBlank()) {
             return find("1 = 0").page(page);
         }
@@ -272,7 +272,7 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
                 .page(page);
     }
 
-    /**Lấy bài viết nổi bật (trending) trong N ngày gần nhất, xếp theo tương tác.*/
+    /**Láº¥y bÃ i viáº¿t ná»•i báº­t (trending) trong N ngÃ y gáº§n nháº¥t, xáº¿p theo tÆ°Æ¡ng tÃ¡c.*/
     public PanacheQuery<Post> findTrending(UUID currentUserId, Page page, int days) {
         LocalDateTime since = LocalDateTime.now().minusDays(Math.max(1, days));
         return find("""
@@ -293,7 +293,7 @@ public class PostRepo implements PanacheRepositoryBase<Post, UUID> {
                           )
                       )
                   )
-                order by (p.like_count + p.comment_count) desc, p.createdAt desc
+                order by (p.like_count + p.comment_count) desc, p.createdAt desc, p.id desc
                 """,
                 Map.of(
                         "publicPrivacy", PostPrivacy.PUBLIC,

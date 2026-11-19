@@ -5,7 +5,7 @@ import '../../../theme/app_colors.dart';
 import '../../../utils/formatters.dart';
 import '../../../widgets/surface_card.dart';
 
-/// Một dòng thông báo (dữ liệu mẫu).
+/// Một dòng thông báo (dữ liệu từ `/api/v1/notifications`).
 class NotificationTile extends StatelessWidget {
   const NotificationTile({super.key, required this.item, this.onTap});
 

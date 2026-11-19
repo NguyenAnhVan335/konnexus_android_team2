@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:konnexus/models/interaction_model.dart';
+import 'package:konnexus/models/notification_model.dart';
 import 'package:konnexus/models/page_data.dart';
 import 'package:konnexus/models/post_model.dart';
+import 'package:konnexus/models/user_model.dart';
 import 'package:konnexus/utils/formatters.dart';
 import 'package:konnexus/utils/json_utils.dart';
 import 'package:konnexus/utils/validators.dart';
@@ -137,6 +140,87 @@ void main() {
       expect(initialsOf('Konexus'), 'K');
       expect(formatCount(1500), '1,5K');
       expect(formatCount(1200000), '1,2M');
+    });
+  });
+
+  group('NotificationItem.fromApi', () {
+    test('đọc is_read và _read (Lombok/Jackson) đúng', () {
+      final NotificationItem direct = NotificationItem.fromApi(<String, dynamic>{
+        'id': 'n1',
+        'type': 'LIKE_POST',
+        'created_at': '2026-11-10T09:00:00',
+        'is_read': true,
+      });
+      expect(direct.isRead, isTrue);
+
+      final NotificationItem legacy = NotificationItem.fromApi(<String, dynamic>{
+        'id': 'n2',
+        'type': 'COMMENT_POST',
+        'created_at': '2026-11-10T09:00:00',
+        '_read': true,
+      });
+      expect(legacy.isRead, isTrue);
+    });
+  });
+
+  group('UserModel.fromJson', () {
+    test('đọc is_online và _online đúng', () {
+      final UserModel direct = UserModel.fromJson(<String, dynamic>{
+        'id': 'u1',
+        'username': 'a',
+        'is_online': true,
+      });
+      expect(direct.isOnline, isTrue);
+
+      final UserModel legacy = UserModel.fromJson(<String, dynamic>{
+        'id': 'u2',
+        'username': 'b',
+        '_online': true,
+      });
+      expect(legacy.isOnline, isTrue);
+    });
+  });
+
+  group('buildCommentTree', () {
+    test('gắn trả lời vào đúng bình luận gốc theo parentId', () {
+      final List<CommentModel> comments = <CommentModel>[
+        CommentModel(
+          id: 'root',
+          postId: 'p1',
+          content: 'Gốc',
+          createdAt: DateTime(2026, 11, 10, 9),
+        ),
+        CommentModel(
+          id: 'reply-1',
+          postId: 'p1',
+          content: 'Trả lời 1',
+          parentId: 'root',
+          createdAt: DateTime(2026, 11, 10, 9, 5),
+        ),
+        CommentModel(
+          id: 'reply-2',
+          postId: 'p1',
+          content: 'Trả lời 2',
+          parentId: 'reply-1',
+          createdAt: DateTime(2026, 11, 10, 9, 10),
+        ),
+        CommentModel(
+          id: 'orphan',
+          postId: 'p1',
+          content: 'Mồ côi',
+          parentId: 'missing',
+          createdAt: DateTime(2026, 11, 10, 9, 15),
+        ),
+      ];
+
+      final List<CommentNode> tree = buildCommentTree(comments);
+
+      // root + orphan (parent không nằm trong danh sách đã tải).
+      expect(tree.length, 2);
+      final CommentNode root =
+          tree.firstWhere((CommentNode node) => node.comment.id == 'root');
+      expect(root.replies.single.comment.id, 'reply-1');
+      expect(root.replies.single.replies.single.comment.id, 'reply-2');
     });
   });
 }

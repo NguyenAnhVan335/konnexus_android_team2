@@ -119,7 +119,7 @@ class EmptyView extends StatelessWidget {
   }
 }
 
-/// Nhãn ghi chú cho phần dữ liệu mẫu (backend chưa có API).
+/// Nhãn ghi chú cho phần dữ liệu mẫu (legacy).
 class MockDataBanner extends StatelessWidget {
   const MockDataBanner({super.key, required this.message});
 

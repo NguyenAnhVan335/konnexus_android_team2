@@ -1,10 +1,10 @@
 import '../../models/chat_model.dart';
 import '../../models/notification_model.dart';
 
-/// Dữ liệu mẫu cho các module **backend chưa có API**: Tin nhắn và Thông báo.
+/// Dữ liệu mẫu (legacy) cho module Tin nhắn/Thông báo — không còn dùng ở production.
 ///
-/// Dữ liệu mẫu nằm ở tầng service (xem `MockChatService`, `MockNotificationService`),
-/// không nằm trong widget, để khi backend bổ sung chỉ cần thay implementation.
+/// Các implementation thật (`ApiChatService`, `ApiNotificationService`) đã thay thế
+/// dữ liệu mẫu này.
 class MockSeed {
   const MockSeed._();
 
@@ -45,7 +45,7 @@ class MockSeed {
         ChatMessage(
           id: 'mock-msg-1',
           threadId: 'mock-thread-1',
-          text: 'Chào bạn, bài viết về Konexus trông ổn rồi đó!',
+          text: 'Chào bạn, bài viết về Konnexus trông ổn rồi đó!',
           sentAt: now.subtract(const Duration(minutes: 40)),
           isMine: false,
         ),
@@ -107,13 +107,13 @@ class MockSeed {
         id: 'mock-noti-3',
         title: 'Bình luận mới',
         body:
-            'Nhóm Mobile 07 vừa bình luận về bài viết "Konexus phiên bản mới".',
+            'Nhóm Mobile 07 vừa bình luận về bài viết "Konnexus phiên bản mới".',
         createdAt: now.subtract(const Duration(hours: 5)),
         kind: NotificationKind.comment,
       ),
       NotificationItem(
         id: 'mock-noti-4',
-        title: 'Chào mừng đến Konexus',
+        title: 'Chào mừng đến Konnexus',
         body: 'Hãy hoàn thiện hồ sơ và kết nối với bạn bè của bạn.',
         createdAt: now.subtract(const Duration(days: 2)),
         kind: NotificationKind.system,

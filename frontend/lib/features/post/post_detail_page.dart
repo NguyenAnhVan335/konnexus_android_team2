@@ -187,40 +187,47 @@ class _PostDetailPageState extends State<PostDetailPage> {
     return null;
   }
 
+  /// Hiển thị một nút bình luận và đệ quy các trả lời (thụt lề theo cấp).
+  Widget _buildCommentNode(
+    CommentNode node,
+    PostDetailController controller, {
+    required int depth,
+  }) {
+    final CommentModel comment = node.comment;
+    final int indentLevel = depth > 4 ? 4 : depth;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(left: indentLevel * 18),
+          child: CommentTile(
+            comment: comment,
+            isOwn: controller.isCommentOwner(comment),
+            parentAuthorName: _parentAuthorName(comment),
+            onReact: () => _reactToComment(comment),
+            onReply: () => _beginReply(comment),
+            onEdit: () => _editComment(comment),
+            onDelete: () => _deleteComment(comment),
+          ),
+        ),
+        for (final CommentNode reply in node.replies)
+          _buildCommentNode(reply, controller, depth: depth + 1),
+      ],
+    );
+  }
+
   Future<void> _editComment(CommentModel comment) async {
     final PostDetailController? controller = _controller;
     if (controller == null) {
       return;
     }
-    final TextEditingController textController =
-        TextEditingController(text: comment.content);
+    // Controller của dialog do widget dialog tự quản lý (xem _CommentEditDialog).
     final String? newContent = await showDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Chỉnh sửa bình luận'),
-          content: TextField(
-            controller: textController,
-            autofocus: true,
-            minLines: 1,
-            maxLines: 5,
-            decoration: const InputDecoration(hintText: 'Nội dung bình luận'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Huỷ'),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(textController.text.trim()),
-              child: const Text('Lưu'),
-            ),
-          ],
-        );
+        return _CommentEditDialog(initialContent: comment.content);
       },
     );
-    textController.dispose();
     if (newContent == null || newContent.isEmpty || !mounted) {
       return;
     }
@@ -319,16 +326,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
                             icon: Icons.mode_comment_outlined,
                           )
                         else
-                          for (final comment in controller.comments)
-                            CommentTile(
-                              comment: comment,
-                              isOwn: controller.isCommentOwner(comment),
-                              parentAuthorName: _parentAuthorName(comment),
-                              onReact: () => _reactToComment(comment),
-                              onReply: () => _beginReply(comment),
-                              onEdit: () => _editComment(comment),
-                              onDelete: () => _deleteComment(comment),
-                            ),
+                          for (final CommentNode node in controller.commentTree)
+                            _buildCommentNode(node, controller, depth: 0),
                       ],
                     ],
                   ),
@@ -416,6 +415,57 @@ class _PostDetailPageState extends State<PostDetailPage> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Dialog sửa bình luận — tự tạo và dispose `TextEditingController`.
+///
+/// Trước đây controller được tạo trong `_editComment` rồi dispose ngay sau khi
+/// `showDialog` trả về. Lúc đó dialog vẫn đang chạy animation đóng và `TextField`
+/// vẫn còn listener, khiến `ChangeNotifier.dispose()` ném assertion
+/// `_dependents.isEmpty`. Đặt controller vào State của dialog để vòng đời khớp
+/// với vòng đời widget.
+class _CommentEditDialog extends StatefulWidget {
+  const _CommentEditDialog({required this.initialContent});
+
+  final String initialContent;
+
+  @override
+  State<_CommentEditDialog> createState() => _CommentEditDialogState();
+}
+
+class _CommentEditDialogState extends State<_CommentEditDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialContent);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Chỉnh sửa bình luận'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        minLines: 1,
+        maxLines: 5,
+        decoration: const InputDecoration(hintText: 'Nội dung bình luận'),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Huỷ'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text('Lưu'),
+        ),
+      ],
     );
   }
 }

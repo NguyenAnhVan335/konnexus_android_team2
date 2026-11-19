@@ -8,7 +8,6 @@
     import com.meta.junior.dto.chat.message.MessageRequestDTO;
     import com.meta.junior.service.MessageReadService;
     import com.meta.junior.service.MessageService;
-    import com.meta.junior.service.UserService;
     import com.meta.junior.service.chatbot.ChatbotService;
     import io.quarkus.security.Authenticated;
     import io.quarkus.websockets.next.*;
@@ -27,9 +26,6 @@
 
         @Inject
         OpenConnections connections;
-
-        @Inject
-        UserService userService;
 
         @Inject
         MessageService messageService;
@@ -188,10 +184,9 @@
 
             System.out.println("User ["+user_id+"] left the group chat ["+conversation_id+"]!");
 
-            if (user_id != null) {
-
-                userService.updateUserStatus(UUID.fromString(user_id), false);
-            }
+            // Không đánh dấu offline ở đây: người dùng có thể chỉ đóng màn hình
+            // chat trong khi vẫn đang dùng app. Trạng thái online do heartbeat/
+            // vòng đời ứng dụng quản lý qua PUT /api/users/status.
 
             // Dọn rác
             connectionUserMap.remove(connection.id());

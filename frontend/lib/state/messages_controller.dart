@@ -4,7 +4,7 @@ import '../core/api/api_exception.dart';
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
 
-/// Trạng thái module Tin nhắn (dữ liệu hiện do [MockChatService] cung cấp).
+/// Trạng thái module Tin nhắn (dữ liệu do [ApiChatService] cung cấp).
 class MessagesController extends AppChangeNotifier {
   MessagesController(this._chatService);
 
@@ -53,5 +53,25 @@ class MessagesController extends AppChangeNotifier {
   }) {
     return _chatService.ensureDirect(
         userId: userId, name: name, avatarUrl: avatarUrl);
+  }
+
+  /// Tạo nhóm chat mới (nhiều thành viên) và trả về thread vừa tạo.
+  Future<ChatThread> createGroup({
+    required String title,
+    required List<String> memberIds,
+    String? avatarUrl,
+  }) {
+    return _chatService.createGroup(
+        title: title, memberIds: memberIds, avatarUrl: avatarUrl);
+  }
+
+  /// Lắng nghe tin nhắn realtime của một cuộc trò chuyện.
+  Stream<ChatMessage> watchMessages(String threadId) {
+    return _chatService.watchMessages(threadId);
+  }
+
+  /// Đóng kết nối realtime khi rời màn hình chat.
+  void closeSocket() {
+    _chatService.closeSocket();
   }
 }

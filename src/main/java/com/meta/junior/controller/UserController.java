@@ -1,5 +1,6 @@
 package com.meta.junior.controller;
 import com.meta.junior.common.ApiResponse;
+import com.meta.junior.dto.ChangePasswordRequestDTO;
 import com.meta.junior.dto.UpdateProfileDTO;
 import com.meta.junior.dto.UserDTO;
 import com.meta.junior.entity.User;
@@ -9,6 +10,7 @@ import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -44,6 +46,15 @@ public class UserController {
     @Authenticated
     public Response updateUser(@PathParam("id") UUID id, UpdateProfileDTO dto){
             return userService.updateUser(id, dto);
+    }
+
+    /** Đổi mật khẩu: bắt buộc nhập đúng mật khẩu hiện tại. */
+    @PUT
+    @Path("/password")
+    @Authenticated
+    public Response changePassword(@Valid ChangePasswordRequestDTO dto){
+            UUID currentUserId = UUID.fromString(jwt.getSubject());
+            return userService.changePassword(currentUserId, dto);
     }
 
     @POST

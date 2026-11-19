@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/di/app_scope.dart';
@@ -23,6 +25,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   MessagesController? _controller;
+  StreamSubscription<ChatMessage>? _subscription;
   List<ChatMessage> _messages = <ChatMessage>[];
   bool _initialized = false;
   bool _isSending = false;
@@ -35,15 +38,42 @@ class _ChatPageState extends State<ChatPage> {
     }
     _initialized = true;
     _controller = MessagesController(AppScope.of(context).chatService);
+    _subscription = _controller!
+        .watchMessages(widget.args.thread.id)
+        .listen(_onIncoming, onError: (Object _) {});
     _loadMessages();
   }
 
   @override
   void dispose() {
+    _subscription?.cancel();
+    _controller?.closeSocket();
     _textController.dispose();
     _scrollController.dispose();
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _onIncoming(ChatMessage incoming) {
+    if (!mounted || incoming.threadId != widget.args.thread.id) {
+      return;
+    }
+    setState(() {
+      final int existingIndex =
+          _messages.indexWhere((ChatMessage m) => m.id == incoming.id);
+      if (existingIndex >= 0) {
+        return;
+      }
+      // Gửi qua WebSocket trả về bản ghi `pending-...`; thay bằng tin nhắn thật.
+      final int pendingIndex = _messages.indexWhere((ChatMessage m) =>
+          m.isMine && m.id.startsWith('pending-') && m.text == incoming.text);
+      if (pendingIndex >= 0) {
+        _messages[pendingIndex] = incoming;
+      } else {
+        _messages = <ChatMessage>[..._messages, incoming];
+      }
+    });
+    _scrollToBottom();
   }
 
   Future<void> _loadMessages() async {

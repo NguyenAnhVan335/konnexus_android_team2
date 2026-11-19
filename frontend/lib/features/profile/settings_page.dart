@@ -59,7 +59,7 @@ class SettingsPage extends StatelessWidget {
     final bool confirmed = await showConfirmDialog(
       context,
       title: 'Đăng xuất',
-      message: 'Bạn có chắc muốn đăng xuất khỏi Konexus trên thiết bị này?',
+      message: 'Bạn có chắc muốn đăng xuất khỏi Konnexus trên thiết bị này?',
       confirmLabel: 'Đăng xuất',
       isDestructive: true,
     );
@@ -121,6 +121,36 @@ class SettingsPage extends StatelessWidget {
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => Navigator.of(context)
                           .pushNamed(AppRoutes.editProfile),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.history),
+                      title: const Text('Lịch sử hoạt động'),
+                      subtitle:
+                          const Text('Hoạt động của bạn trong 7 ngày gần nhất'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context)
+                          .pushNamed(AppRoutes.activityHistory),
+                    ),
+                    if (session.isAdmin) ...<Widget>[
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.admin_panel_settings_outlined),
+                        title: const Text('Bảng điều khiển quản trị'),
+                        subtitle: const Text('Quản lý người dùng, phòng chat và bot'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            Navigator.of(context).pushNamed(AppRoutes.admin),
+                      ),
+                    ],
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.lock_reset_outlined),
+                      title: const Text('Đổi mật khẩu'),
+                      subtitle: const Text('Cần nhập mật khẩu hiện tại'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context)
+                          .pushNamed(AppRoutes.changePassword),
                     ),
                     const Divider(height: 1),
                     ListTile(

@@ -118,3 +118,53 @@ class CommentModel {
     );
   }
 }
+
+/// Một nút trong cây bình luận (bình luận gốc + các trả lời lồng nhau).
+class CommentNode {
+  const CommentNode({required this.comment, required this.replies});
+
+  final CommentModel comment;
+  final List<CommentNode> replies;
+}
+
+/// Dựng cây bình luận từ danh sách phẳng dựa trên `parentId`.
+///
+/// - Bình luận không có `parentId` (hoặc parent không nằm trong danh sách đã
+///   tải) được coi là gốc để không bị mất khi phân trang.
+/// - Thứ tự gốc giữ nguyên như backend trả về (mới nhất trước); các trả lời
+///   được sắp xếp theo thời gian tăng dần để đọc theo mạch hội thoại.
+List<CommentNode> buildCommentTree(List<CommentModel> comments) {
+  final Set<String> ids = comments.map((CommentModel c) => c.id).toSet();
+  final Map<String, List<CommentModel>> childrenByParent =
+      <String, List<CommentModel>>{};
+  final List<CommentModel> roots = <CommentModel>[];
+
+  for (final CommentModel comment in comments) {
+    final String? parentId = comment.parentId;
+    if (parentId != null && parentId.isNotEmpty && ids.contains(parentId)) {
+      childrenByParent.putIfAbsent(parentId, () => <CommentModel>[]).add(comment);
+    } else {
+      roots.add(comment);
+    }
+  }
+
+  CommentNode build(CommentModel comment) {
+    final List<CommentModel> children =
+        childrenByParent[comment.id] ?? const <CommentModel>[];
+    final List<CommentModel> sorted = List<CommentModel>.from(children)
+      ..sort((CommentModel a, CommentModel b) {
+        final DateTime? left = a.createdAt;
+        final DateTime? right = b.createdAt;
+        if (left == null || right == null) {
+          return 0;
+        }
+        return left.compareTo(right);
+      });
+    return CommentNode(
+      comment: comment,
+      replies: sorted.map(build).toList(growable: false),
+    );
+  }
+
+  return roots.map(build).toList(growable: false);
+}

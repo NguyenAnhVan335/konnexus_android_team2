@@ -1,5 +1,6 @@
 package com.meta.junior.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.meta.junior.common.SystemRole;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class User {
     @Column(name = "email", unique = true)
     private String email;
     @Column(name = "password")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -31,6 +33,7 @@ public class User {
     @Column(name = "avatar_url")
     private String avatar_url;
     @Column(name = "is_online")
+    @JsonProperty("is_online")
     private boolean is_online;
     @Column(name = "last_seen")
     private LocalDateTime last_seen;
@@ -47,5 +50,9 @@ public class User {
     private String gender;
     @Column(name = "is_active")
     private boolean is_active = true;
+
+    @Column(name = "verification_token")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String verification_token;
 
 }

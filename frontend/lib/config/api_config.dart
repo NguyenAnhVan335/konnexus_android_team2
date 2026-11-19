@@ -17,6 +17,9 @@ class ApiConfig {
 
   static const Duration requestTimeout = Duration(seconds: 20);
 
+  /// Upload tệp có thể lâu hơn request thường (ảnh/video, tối đa 200MB).
+  static const Duration uploadTimeout = Duration(seconds: 300);
+
   /// Số phần tử mỗi trang khi gọi các API phân trang (`size` <= 100 theo backend).
   static const int pageSize = 10;
 
@@ -29,5 +32,14 @@ class ApiConfig {
       return baseUrl.substring(0, baseUrl.length - 1);
     }
     return baseUrl;
+  }
+
+  /// Base URL cho WebSocket: đổi `http(s)://` thành `ws(s)://`.
+  static String get wsBaseUrl {
+    final String base = normalizedBaseUrl;
+    if (base.startsWith('https://')) {
+      return base.replaceFirst('https://', 'wss://');
+    }
+    return base.replaceFirst('http://', 'ws://');
   }
 }

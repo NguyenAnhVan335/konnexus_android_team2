@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/post_model.dart';
 import '../../../utils/validators.dart';
 
-/// Hộp thoại thêm media bằng URL (backend chưa có API upload ảnh).
+/// Hộp thoại thêm media bằng URL (dùng `POST /api/upload` khi cần tải ảnh từ máy).
 class MediaInputDialog extends StatefulWidget {
   const MediaInputDialog({super.key});
 
